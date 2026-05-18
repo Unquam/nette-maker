@@ -1,8 +1,10 @@
 # unquam/nette-maker
 
-[![Tests](https://github.com/unquam/nette-maker/actions/workflows/tests.yml/badge.svg)](https://github.com/unquam/nette-maker/actions/workflows/tests.yml)
 [![PHP Version](https://img.shields.io/badge/php-%3E%3D7.4-blue)](https://php.net)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Tests](https://github.com/unquam/nette-maker/actions/workflows/tests.yml/badge.svg)](https://github.com/unquam/nette-maker/actions/workflows/tests.yml)
+[![Packagist Version](https://img.shields.io/packagist/v/unquam/nette-maker)](https://packagist.org/packages/unquam/nette-maker)
+[![Packagist Downloads](https://img.shields.io/packagist/dt/unquam/nette-maker)](https://packagist.org/packages/unquam/nette-maker)
 
 A CLI code generator for [Nette Framework](https://nette.org). Scaffold presenters, models, repositories, services, Latte templates, and database migrations with a single command — without touching boilerplate ever again.
 
