@@ -7,6 +7,7 @@ namespace Unquam\NetteMaker\DI;
 use Nette\DI\CompilerExtension;
 use Unquam\NetteMaker\Commands\ClearCacheCommand;
 use Unquam\NetteMaker\Commands\FreshCommand;
+use Unquam\NetteMaker\Commands\MakeFactoryCommand;
 use Unquam\NetteMaker\Commands\MakeInitCommand;
 use Unquam\NetteMaker\Commands\MakeLatteCommand;
 use Unquam\NetteMaker\Commands\MakeMigrationCommand;
@@ -48,6 +49,10 @@ class MakerExtension extends CompilerExtension
 
         $builder->addDefinition($this->prefix('makeMigration'))
             ->setFactory(MakeMigrationCommand::class, [$configFile])
+            ->setTags($tags);
+
+        $builder->addDefinition($this->prefix('makeFactory'))
+            ->setFactory(MakeFactoryCommand::class, [$configFile])
             ->setTags($tags);
 
         $builder->addDefinition($this->prefix('makeSeeder'))

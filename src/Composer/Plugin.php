@@ -105,6 +105,8 @@ class Plugin implements PluginInterface, EventSubscriberInterface
             "    directory: db/migrations\n\n" .
             "seeders:\n" .
             "    directory: db/seeders\n\n" .
+            "factories:\n" .
+            "    directory: db/factories\n\n" .
             "cache:\n" .
             "    directories:\n" .
             "        - temp\n";

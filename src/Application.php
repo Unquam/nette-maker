@@ -7,6 +7,7 @@ namespace Unquam\NetteMaker;
 use Symfony\Component\Console\Application as ConsoleApplication;
 use Unquam\NetteMaker\Commands\ClearCacheCommand;
 use Unquam\NetteMaker\Commands\FreshCommand;
+use Unquam\NetteMaker\Commands\MakeFactoryCommand;
 use Unquam\NetteMaker\Commands\MakeInitCommand;
 use Unquam\NetteMaker\Commands\MakeLatteCommand;
 use Unquam\NetteMaker\Commands\MakeMigrationCommand;
@@ -23,7 +24,7 @@ use Unquam\NetteMaker\Migration\MigrateCommand;
 class Application extends ConsoleApplication
 {
     /** @var string */
-    private const VERSION = '1.4.0';
+    private const VERSION = '1.5.0';
 
     /** @var string */
     private const NAME = 'Nette Maker';
@@ -54,7 +55,8 @@ class Application extends ConsoleApplication
             new MigrateCommand($configFile),
             new FreshCommand($configFile),
 
-            // Database seeders layer management commands
+            // Database seeders and data factories layer management commands
+            new MakeFactoryCommand($configFile),
             new MakeSeederCommand($configFile),
             new SeedCommand($configFile),
             new WipeCommand($configFile),

@@ -494,6 +494,83 @@ seeders:
 
 ---
 
+### Data Factories
+
+Generate powerful blueprint schemas for your database records to simplify seeding and testing.
+
+Create a new model factory class stub:
+```bash
+php nette make:factory User
+```
+
+Configure your custom factories lookup directory path inside `nette-maker.neon`:
+
+```neon
+factories:
+    directory: db/factories
+```
+
+#### Inside the Factory Class
+Each generated factory is a structured PHP class extending `AbstractFactory`. You can easily map default attributes using standard PHP or external libraries like Faker:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+use Unquam\NetteMaker\Migration\AbstractFactory;
+
+class UserFactory extends AbstractFactory
+{
+    protected function defineTable(): string
+    {
+        return 'users';
+    }
+
+    protected function definition(): array
+    {
+        // \$faker = \Faker\Factory::create();
+
+        return [
+            'name' => 'John Doe',
+            'email' => 'user_' . uniqid() . '@example.com',
+            'role' => 'user',
+            'created_at' => date('Y-m-d H:i:s'),
+        ];
+    }
+}
+```
+
+#### Usage in Seeders
+Since generated blueprints are native PHP classes, you get complete IDE autocompletion. Simply instantiate the factory inside your seeders context loop using a standard object constructor:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+return new class
+{
+    public function run(\PDO \$pdo): void
+    {
+        // Require the generated factory class layout
+        require_once dirname(__DIR__) . '/factories/UserFactory.php';
+
+        \(factory = new UserFactory(\)pdo);
+
+        // Fluent interface: instantly seed exactly 50 default users!
+        \$factory->count(50)->create();
+
+        // Or create separate entries while seamlessly overriding default values
+        \$factory->count(2)->create([
+            'role' => 'admin',
+        ]);
+    }
+};
+```
+
+---
+
 ### `clear:cache`
 
 Safely clears application cache and maintenance directories.
