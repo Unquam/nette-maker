@@ -19,11 +19,10 @@ CREATE TABLE [{$table}] (
     public function compileCreate(string $table, array $columns): string
     {
         $cleanedColumns = array_map(function (string $col) {
-            return rtrim(trim($col), ',');
+            return rtrim(trim($col), ';,');
         }, $columns);
 
         $cleanedColumns = array_filter($cleanedColumns);
-
         $columnsSql = implode(",\n    ", $cleanedColumns);
 
         return "CREATE TABLE [{$table}] (\n    {$columnsSql}\n);";
@@ -86,13 +85,12 @@ CREATE TABLE [{$table}] (
 
     public function compileNullable(string $column): string
     {
-        return preg_replace('/NOT NULL/', 'NULL', $column, 1);
+        return (string) preg_replace('/NOT NULL/', 'NULL', $column, 1);
     }
 
     /**
      * @param string $column
      * @param mixed $value
-     * @return string
      */
     public function compileDefault(string $column, $value): string
     {
@@ -105,7 +103,7 @@ CREATE TABLE [{$table}] (
         }
 
         if (strpos($column, 'DEFAULT') !== false) {
-            return preg_replace('/DEFAULT \S+/', "DEFAULT {$compiled}", $column, 1);
+            return (string) preg_replace('/DEFAULT \S+/', "DEFAULT {$compiled}", $column, 1);
         }
 
         return rtrim($column) . " DEFAULT {$compiled}";
@@ -114,5 +112,52 @@ CREATE TABLE [{$table}] (
     public function compileUnique(string $column): string
     {
         return rtrim($column) . ' UNIQUE';
+    }
+
+    public function compileIndex(string $table, array $columns, string $name): string
+    {
+        $cols = implode('], [', $columns);
+
+        // Inline unique specification format matching standard MS SQL blocks
+        return "CONSTRAINT [{$name}] UNIQUE ([{$cols}])";
+    }
+
+    public function compileDropIndex(string $table, string $name): string
+    {
+        return "DROP INDEX [{$name}] ON [{$table}];";
+    }
+
+    public function compilePrimary(string $table, array $columns): string
+    {
+        $cols = implode('], [', $columns);
+        return "PRIMARY KEY ([{$cols}])";
+    }
+
+    public function compileDropPrimary(string $table): string
+    {
+        return "ALTER TABLE [{$table}] DROP CONSTRAINT [PK_{$table}];";
+    }
+
+    public function compileForeign(string $table, string $column, string $referencedTable, string $referencedColumn, string $name, string $onDelete, string $onUpdate): string
+    {
+        // Seamlessly nested constraint matching for direct MSSQL table compilation
+        return "CONSTRAINT [{$name}] FOREIGN KEY ([{$column}]) REFERENCES [{$referencedTable}] ([{$referencedColumn}]) ON DELETE {$onDelete} ON UPDATE {$onUpdate}";
+    }
+
+    public function compileDropForeign(string $table, string $name): string
+    {
+        return "ALTER TABLE [{$table}] DROP CONSTRAINT [{$name}];";
+    }
+
+    public function compileDropColumn(string $table, string $column): string
+    {
+        return "ALTER TABLE [{$table}] DROP COLUMN [{$column}];";
+    }
+
+    public function compileAfter(string $column, string $afterColumn): string
+    {
+        // MS SQL Server does not support column positioning inline.
+        // Returns empty string to handle execution gracefully inside TableBuilder.
+        return '';
     }
 }

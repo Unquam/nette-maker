@@ -37,7 +37,7 @@ class MakeServiceCommand extends Command
             $generator = new ServiceGenerator(getcwd());
             $file = $generator->generate($name);
 
-            $io->success('Service created: ' . $file);
+            $io->writeln('<fg=green>✓ Service created:</fg=green> ' . basename(dirname($file)) . '/' . basename($file));
 
             return Command::SUCCESS;
 

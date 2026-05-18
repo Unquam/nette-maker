@@ -10,7 +10,35 @@ return new class
     {
         $builder->create('{{table}}', function (TableBuilder $table): void {
             $table->id();
-            // Add your columns here: $table->string('email')->unique();
+            // Available column types:
+            // $table->string('title');
+            // $table->string('slug', 191);
+            // $table->text('body');
+            // $table->integer('views');
+            // $table->bigInteger('score');
+            // $table->boolean('is_active');
+            // $table->float('rating');
+            // $table->decimal('price', 10, 2);
+            // $table->timestamp('published_at');
+            // $table->timestamps();
+
+            // Modifiers (chain after a column):
+            // $table->string('email')->nullable();
+            // $table->string('role')->default('user');
+            // $table->string('email')->unique();
+            // $table->string('name')->after('id');        // MySQL/MariaDB only
+
+            // Indexes:
+            // $table->index('user_id');
+            // $table->index(['user_id', 'status']);
+
+            // Foreign keys:
+            // $table->foreign('user_id', 'users')->cascadeOnDelete();
+            // $table->foreign('user_id', 'users', 'id', null, 'SET NULL', 'RESTRICT');
+
+            // Composite primary key:
+            // $table->primary(['user_id', 'role_id']);
+
             $table->timestamps();
         });
     }
@@ -18,5 +46,13 @@ return new class
     public function down(TableBuilder $builder): void
     {
         $builder->drop('{{table}}');
+
+        // To alter an existing table instead of dropping:
+        // $builder->table('{{table}}', function (TableBuilder $table): void {
+        //     $table->dropColumn('email');
+        //     $table->dropIndex('idx_{{table}}_email');
+        //     $table->dropForeign('fk_{{table}}_user_id');
+        //     $table->dropPrimary();
+        // });
     }
 };

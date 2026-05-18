@@ -12,7 +12,10 @@ use Unquam\NetteMaker\Exceptions\GeneratorException;
 
 class MakeInitCommand extends Command
 {
+    /** @var string */
     protected static $defaultName = 'make:init';
+
+    /** @var string */
     protected static $defaultDescription = 'Create default nette-maker.neon config file in project root';
 
     /** @var string */
@@ -36,7 +39,7 @@ class MakeInitCommand extends Command
             $target = $this->projectPath . '/nette-maker.neon';
 
             if (file_exists($target)) {
-                $io->warning('Config file already exists: ' . $target);
+                $io->writeln('<fg=yellow>⚠ Config file already exists:</fg=yellow> nette-maker.neon');
                 return Command::SUCCESS;
             }
 
@@ -50,8 +53,8 @@ class MakeInitCommand extends Command
                 throw new GeneratorException('Failed to create config file: ' . $target);
             }
 
-            $io->success('Config file created: ' . $target);
-            $io->comment('Please update your database credentials in nette-maker.neon');
+            $io->writeln('<fg=green>✓ Config file created:</fg=green> nette-maker.neon');
+            $io->writeln('<comment>Please update your database credentials in nette-maker.neon</comment>');
 
             return Command::SUCCESS;
 

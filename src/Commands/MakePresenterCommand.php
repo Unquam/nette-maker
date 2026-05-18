@@ -37,7 +37,7 @@ class MakePresenterCommand extends Command
             $generator = new PresenterGenerator(getcwd());
             $file = $generator->generate($name);
 
-            $io->success('Presenter created: ' . $file);
+            $io->writeln('<fg=green>✓ Presenter created:</fg=green> ' . basename(dirname($file)) . '/' . basename($file));
 
             return Command::SUCCESS;
 

@@ -37,7 +37,7 @@ class MakeRepositoryCommand extends Command
             $generator = new RepositoryGenerator(getcwd());
             $file = $generator->generate($name);
 
-            $io->success('Repository created: ' . $file);
+            $io->writeln('<fg=green>✓ Repository created:</fg=green> ' . basename(dirname($file)) . '/' . basename($file));
 
             return Command::SUCCESS;
 

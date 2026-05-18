@@ -48,6 +48,8 @@ class ServiceGenerator
 
         $namespace = $file->addNamespace('App\Model\Services');
         $namespace->addUse($repositoryClass);
+        // Added Nette ActiveRow for the example method return type documentation tracking
+        $namespace->addUse('Nette\Database\Table\ActiveRow');
 
         $class = $namespace->addClass($name . 'Service');
         $class->setFinal();
@@ -57,14 +59,20 @@ class ServiceGenerator
             ->setPrivate()
             ->setType($repositoryClass);
 
-        // 2. Build a standard constructor with dependency assignment in the method body
+        // 2. Build a standard constructor
         $constructor = $class->addMethod('__construct')
             ->setPublic();
-
         $constructor->addParameter('repository')
             ->setType($repositoryClass);
-
         $constructor->addBody('$this->repository = $repository;');
+
+        // 3. Added a clean, commented boilerplate example business logic method
+        $getDetail = $class->addMethod('getDetail')
+            ->setPublic();
+        $getDetail->addParameter('id')->setType('int');
+
+        $getDetail->addBody('// TODO: Add your business logic here (e.g., checking permissions, logging)');
+        $getDetail->addBody('return $this->repository->findById($id);');
 
         return (string) $file;
     }

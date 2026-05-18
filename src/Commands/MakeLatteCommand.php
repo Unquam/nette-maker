@@ -37,7 +37,7 @@ class MakeLatteCommand extends Command
             $generator = new LatteGenerator(getcwd());
             $file = $generator->generate($name);
 
-            $io->success('Latte template created: ' . $file);
+            $io->writeln('<fg=green>✓ Latte template created:</fg=green> ' . basename(dirname($file)) . '/' . basename($file));
 
             return Command::SUCCESS;
 

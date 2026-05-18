@@ -22,7 +22,10 @@ use Unquam\NetteMaker\Support\Inflector;
 
 class MakeModuleCommand extends Command
 {
+    /** @var string */
     protected static $defaultName = 'make:module';
+
+    /** @var string */
     protected static $defaultDescription = 'Create a new module - presenter, model, repository, service, migration and latte template';
 
     /** @var string */
@@ -57,75 +60,80 @@ class MakeModuleCommand extends Command
 
         /** @var array|null $parts */
         $parts = $only ? array_map('trim', explode(',', $only)) : null;
-
-        $results = [];
         $errors = [];
 
+        // 1. Generate Presenter
         if ($this->shouldGenerate('presenter', $parts, $input)) {
             try {
                 $file = (new PresenterGenerator($basePath))->generate($name);
-                $results[] = 'Presenter created: ' . $file;
+                $io->writeln('<fg=green>✓ Presenter created:</fg=green> ' . basename(dirname($file)) . '/' . basename($file));
             } catch (GeneratorException $e) {
                 $errors[] = $e->getMessage();
             }
         }
 
+        // 2. Generate Model
         if ($this->shouldGenerate('model', $parts, $input)) {
             try {
                 $file = (new ModelGenerator($basePath))->generate($name);
-                $results[] = 'Model created: ' . $file;
+                $io->writeln('<fg=green>✓ Model created:</fg=green> ' . basename(dirname($file)) . '/' . basename($file));
             } catch (GeneratorException $e) {
                 $errors[] = $e->getMessage();
             }
         }
 
+        // 3. Generate Repository
         if ($this->shouldGenerate('repository', $parts, $input)) {
             try {
                 $file = (new RepositoryGenerator($basePath))->generate($name);
-                $results[] = 'Repository created: ' . $file;
+                $io->writeln('<fg=green>✓ Repository created:</fg=green> ' . basename(dirname($file)) . '/' . basename($file));
             } catch (GeneratorException $e) {
                 $errors[] = $e->getMessage();
             }
         }
 
+        // 4. Generate Service
         if ($this->shouldGenerate('service', $parts, $input)) {
             try {
                 $file = (new ServiceGenerator($basePath))->generate($name);
-                $results[] = 'Service created: ' . $file;
+                $io->writeln('<fg=green>✓ Service created:</fg=green> ' . basename(dirname($file)) . '/' . basename($file));
             } catch (GeneratorException $e) {
                 $errors[] = $e->getMessage();
             }
         }
 
+        // 5. Generate Migration
         if ($this->shouldGenerate('migration', $parts, $input)) {
             try {
                 $migrationsDir = $this->resolveMigrationsDir($basePath);
                 $migrationName = 'create_' . Inflector::toTableName($rawName) . '_table';
                 $file = (new MigrationGenerator($migrationsDir))->generate($migrationName);
-                $results[] = 'Migration created: ' . $file;
+                $io->writeln('<fg=green>✓ Migration created:</fg=green> ' . basename(dirname($file)) . '/' . basename($file));
             } catch (GeneratorException $e) {
                 $errors[] = $e->getMessage();
             }
         }
 
+        // 6. Generate Latte Template
         if ($this->shouldGenerate('latte', $parts, $input)) {
             try {
                 $file = (new LatteGenerator($basePath))->generate($name);
-                $results[] = 'Latte template created: ' . $file;
+                $io->writeln('<fg=green>✓ Latte template created:</fg=green> ' . basename(dirname($file)) . '/' . basename($file));
             } catch (GeneratorException $e) {
                 $errors[] = $e->getMessage();
             }
         }
 
-        foreach ($results as $result) {
-            $io->success($result);
+        // Output formatting structured into standard blocks if any execution boundary fails
+        if (!empty($errors)) {
+            $io->newLine();
+            foreach ($errors as $error) {
+                $io->error($error);
+            }
+            return Command::FAILURE;
         }
 
-        foreach ($errors as $error) {
-            $io->error($error);
-        }
-
-        return empty($errors) ? Command::SUCCESS : Command::FAILURE;
+        return Command::SUCCESS;
     }
 
     private function resolveMigrationsDir(string $basePath): string

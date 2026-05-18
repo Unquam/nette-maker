@@ -6,9 +6,6 @@ namespace Unquam\NetteMaker\Migration\Drivers;
 
 interface DriverInterface
 {
-    /**
-     * Return a CREATE TABLE statement for the migrations tracking table.
-     */
     public function compileCreateMigrationsTable(string $table): string;
 
     public function compileCreate(string $table, array $columns): string;
@@ -43,4 +40,25 @@ interface DriverInterface
     public function compileDefault(string $column, $value): string;
 
     public function compileUnique(string $column): string;
+
+    // Index
+    public function compileIndex(string $table, array $columns, string $name): string;
+
+    public function compileDropIndex(string $table, string $name): string;
+
+    // Primary key
+    public function compilePrimary(string $table, array $columns): string;
+
+    public function compileDropPrimary(string $table): string;
+
+    // Foreign key
+    public function compileForeign(string $table, string $column, string $referencedTable, string $referencedColumn, string $name, string $onDelete, string $onUpdate): string;
+
+    public function compileDropForeign(string $table, string $name): string;
+
+    // Drop column
+    public function compileDropColumn(string $table, string $column): string;
+
+    // After (MySQL/MariaDB only - other drivers return empty string)
+    public function compileAfter(string $column, string $afterColumn): string;
 }

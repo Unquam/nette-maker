@@ -18,11 +18,10 @@ class SQLiteDriver implements DriverInterface
     public function compileCreate(string $table, array $columns): string
     {
         $cleanedColumns = array_map(function (string $col) {
-            return rtrim(trim($col), ',');
+            return rtrim(trim($col), ';,');
         }, $columns);
 
         $cleanedColumns = array_filter($cleanedColumns);
-
         $columnsSql = implode(",\n    ", $cleanedColumns);
 
         return "CREATE TABLE \"{$table}\" (\n    {$columnsSql}\n);";
@@ -85,13 +84,12 @@ class SQLiteDriver implements DriverInterface
 
     public function compileNullable(string $column): string
     {
-        return preg_replace('/NOT NULL/', 'NULL', $column, 1);
+        return (string) preg_replace('/NOT NULL/', 'NULL', $column, 1);
     }
 
     /**
      * @param string $column
      * @param mixed $value
-     * @return string
      */
     public function compileDefault(string $column, $value): string
     {
@@ -104,7 +102,7 @@ class SQLiteDriver implements DriverInterface
         }
 
         if (strpos($column, 'DEFAULT') !== false) {
-            return preg_replace('/DEFAULT \S+/', "DEFAULT {$compiled}", $column, 1);
+            return (string) preg_replace('/DEFAULT \S+/', "DEFAULT {$compiled}", $column, 1);
         }
 
         return rtrim($column) . " DEFAULT {$compiled}";
@@ -113,5 +111,54 @@ class SQLiteDriver implements DriverInterface
     public function compileUnique(string $column): string
     {
         return rtrim($column) . ' UNIQUE';
+    }
+
+    public function compileIndex(string $table, array $columns, string $name): string
+    {
+        $cols = implode('", "', $columns);
+
+        // Inline layout format matching SQLite schema boundaries
+        return "UNIQUE (\"{$cols}\")";
+    }
+
+    public function compileDropIndex(string $table, string $name): string
+    {
+        return "DROP INDEX \"{$name}\";";
+    }
+
+    public function compilePrimary(string $table, array $columns): string
+    {
+        $cols = implode('", "', $columns);
+        return "PRIMARY KEY (\"{$cols}\")";
+    }
+
+    public function compileDropPrimary(string $table): string
+    {
+        // SQLite does not support ALTER TABLE DROP PRIMARY KEY natively
+        return '';
+    }
+
+    public function compileForeign(string $table, string $column, string $referencedTable, string $referencedColumn, string $name, string $onDelete, string $onUpdate): string
+    {
+        // Inline key matching requirements for isolated SQLite schemas
+        return "FOREIGN KEY (\"{$column}\") REFERENCES \"{$referencedTable}\" (\"{$referencedColumn}\") ON DELETE {$onDelete} ON UPDATE {$onUpdate}";
+    }
+
+    public function compileDropForeign(string $table, string $name): string
+    {
+        // SQLite does not support ALTER TABLE DROP FOREIGN KEY natively
+        return '';
+    }
+
+    public function compileDropColumn(string $table, string $column): string
+    {
+        return "ALTER TABLE \"{$table}\" DROP COLUMN \"{$column}\";";
+    }
+
+    public function compileAfter(string $column, string $afterColumn): string
+    {
+        // SQLite does not natively support column positioning.
+        // Returns an empty string to keep the core statement stable via TableBuilder.
+        return '';
     }
 }

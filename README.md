@@ -243,7 +243,24 @@ return new class
             // $table->decimal('price', 10, 2);
             // $table->timestamp('published_at');
             // $table->timestamps();
-            // Modifiers: ->nullable(), ->default('value'), ->unique()
+
+            // Modifiers (chain after a column):
+            // $table->string('email')->nullable();
+            // $table->string('role')->default('user');
+            // $table->string('email')->unique();
+            // $table->string('name')->after('id');        // MySQL/MariaDB only
+
+            // Indexes:
+            // $table->index('user_id');
+            // $table->index(['user_id', 'status']);
+
+            // Foreign keys:
+            // $table->foreign('user_id', 'users')->cascadeOnDelete();
+            // $table->foreign('user_id', 'users', 'id', null, 'SET NULL', 'RESTRICT');
+
+            // Composite primary key:
+            // $table->primary(['user_id', 'role_id']);
+
             $table->timestamps();
         });
     }
@@ -251,6 +268,14 @@ return new class
     public function down(TableBuilder $builder): void
     {
         $builder->drop('{{table}}');
+
+        // To alter an existing table instead of dropping:
+        // $builder->table('{{table}}', function (TableBuilder $table): void {
+        //     $table->dropColumn('email');
+        //     $table->dropIndex('idx_{{table}}_email');
+        //     $table->dropForeign('fk_{{table}}_user_id');
+        //     $table->dropPrimary();
+        // });
     }
 };
 ```
@@ -272,9 +297,31 @@ $builder->create('table_name', function (TableBuilder $table): void {
     $table->timestamps();                  // created_at + updated_at
 
     // Modifiers (chain after a column):
-    $table->string('email')->nullable();          // allows NULL
-    $table->string('role')->default('user');      // adds DEFAULT
-    $table->string('email')->unique();            // adds UNIQUE
+    $table->string('email')->nullable();
+    $table->string('role')->default('user');
+    $table->string('email')->unique();
+    $table->string('name')->after('id');   // MySQL/MariaDB only
+
+    // Indexes:
+    $table->index('user_id');
+    $table->index(['user_id', 'status']);
+    $table->index(['user_id', 'status'], 'custom_index_name');
+
+    // Foreign keys:
+    $table->foreign('user_id', 'users');
+    $table->foreign('user_id', 'users')->cascadeOnDelete();
+    $table->foreign('user_id', 'users', 'id', null, 'SET NULL', 'RESTRICT');
+
+    // Composite primary key:
+    $table->primary(['user_id', 'role_id']);
+});
+
+// Alter existing table:
+$builder->table('table_name', function (TableBuilder $table): void {
+    $table->dropColumn('email');
+    $table->dropIndex('idx_table_email');
+    $table->dropForeign('fk_table_user_id');
+    $table->dropPrimary();
 });
 
 $builder->drop('table_name');
@@ -298,6 +345,7 @@ All parts are optional. Skip specific ones with `--no-*` flags:
 ```bash
 php nette make:module Article --no-migration --no-latte
 php nette make:module Article --no-service --no-repository
+php nette make:module Article --no-presenter --no-model
 ```
 
 Generate only specific parts with `--only`:
@@ -305,6 +353,7 @@ Generate only specific parts with `--only`:
 ```bash
 php nette make:module Article --only=presenter,model
 php nette make:module Article --only=migration
+php nette make:module Article --only=presenter,model,repository,service
 ```
 
 Comma-separated values accepted: `presenter`, `model`, `repository`, `service`, `migration`, `latte`.

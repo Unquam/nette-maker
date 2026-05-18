@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unquam\NetteMaker\Generators;
 
 use Nette\PhpGenerator\PhpFile;
+use Nette\PhpGenerator\Printer;
 use Unquam\NetteMaker\Exceptions\GeneratorException;
 
 class PresenterGenerator
@@ -48,12 +49,24 @@ class PresenterGenerator
         $namespace->addUse('Nette\Application\UI\Presenter');
 
         $class = $namespace->addClass($name . 'Presenter');
-        $class->setExtends('Nette\Application\UI\Presenter');
+
+        $class->setExtends('Presenter');
         $class->setFinal();
 
-        $class->addMethod('renderDefault')
+        $method = $class->addMethod('renderDefault')
             ->setReturnType('void');
 
-        return (string) $file;
+        $method->addBody('// Example: Send data to the default.latte template');
+        $method->addBody('$this->template->title = ?;', [$name . ' Module']);
+        $method->addBody('$this->template->description = \'Welcome to your newly generated component!\';');
+
+        $printerClass = class_exists('Nette\PhpGenerator\PsrPrinter')
+            ? 'Nette\PhpGenerator\PsrPrinter'
+            : 'Nette\PhpGenerator\Printer';
+
+        /** @var Printer $printer */
+        $printer = new $printerClass();
+
+        return $printer->printFile($file);
     }
 }
