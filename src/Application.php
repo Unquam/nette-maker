@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unquam\NetteMaker;
 
 use Symfony\Component\Console\Application as ConsoleApplication;
+use Unquam\NetteMaker\Commands\ClearCacheCommand;
 use Unquam\NetteMaker\Commands\MakeInitCommand;
 use Unquam\NetteMaker\Commands\MakeLatteCommand;
 use Unquam\NetteMaker\Commands\MakeMigrationCommand;
@@ -17,7 +18,7 @@ use Unquam\NetteMaker\Migration\MigrateCommand;
 
 class Application extends ConsoleApplication
 {
-    private const VERSION = '1.1.0';
+    private const VERSION = '1.2.0';
     private const NAME = 'Nette Maker';
 
     public function __construct(string $configFile)
@@ -37,15 +38,23 @@ class Application extends ConsoleApplication
         $projectPath = dirname($configFile);
 
         $this->addCommands([
+            // Core package initialization and maintenance commands
             new MakeInitCommand($projectPath),
+            new ClearCacheCommand($configFile),
+
+            // Database migrations layer management commands
+            new MakeMigrationCommand($configFile),
+            new MigrateCommand($configFile),
+
+            // Complete module scaffold generator command
+            new MakeModuleCommand($configFile),
+
+            // Individual single file code generators commands
             new MakePresenterCommand(),
             new MakeModelCommand(),
-            new MakeMigrationCommand($configFile),
             new MakeLatteCommand(),
             new MakeRepositoryCommand(),
             new MakeServiceCommand(),
-            new MakeModuleCommand($configFile),
-            new MigrateCommand($configFile),
         ]);
     }
 }

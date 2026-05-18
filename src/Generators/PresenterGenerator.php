@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Unquam\NetteMaker\Generators;
 
 use Nette\PhpGenerator\PhpFile;
-use Nette\PhpGenerator\Printer;
 use Unquam\NetteMaker\Exceptions\GeneratorException;
 
 class PresenterGenerator

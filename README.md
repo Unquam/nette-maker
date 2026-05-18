@@ -426,9 +426,30 @@ db/
 └── migrations/
     └── 2026_05_18_120000_create_articles_table.php  # make:migration
 ```
-
 ---
 
+### `clear:cache`
+
+Safely clears application cache and maintenance directories.
+
+```bash
+php nette clear:cache
+```
+
+By default, it targets the `temp/` folder. It uses **smart isolation**: inside the standard Nette `temp/` directory, it removes only the compiled configuration and templates (`temp/cache/` and `temp/proxies/`), strictly ignoring `temp/session/` so active web users won't log out.
+
+You can configure multiple custom directories to be fully cleared inside your `nette-maker.neon` configuration array:
+
+```neon
+cache:
+    # List of directories to be cleared during clear:cache execution
+    directories:
+        - temp
+        # - log
+        # - www/assets/cache
+```
+
+---
 ## Contributing
 
 Contributions are welcome! Please follow these steps:

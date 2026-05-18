@@ -96,12 +96,16 @@ class Plugin implements PluginInterface, EventSubscriberInterface
             return;
         }
 
+        // Updated default fallback string layout with "directories" array block support
         $default = "database:\n" .
             "    dsn: 'mysql:host=127.0.0.1;dbname=your_database'\n" .
             "    user: root\n" .
             "    password: ''\n\n" .
             "migrations:\n" .
-            "    directory: db/migrations\n";
+            "    directory: db/migrations\n\n" .
+            "cache:\n" .
+            "    directories:\n" .
+            "        - temp\n";
 
         file_put_contents($configFile, $default);
     }

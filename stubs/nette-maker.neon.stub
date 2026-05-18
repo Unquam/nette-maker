@@ -6,3 +6,10 @@ database:
 
 migrations:
     directory: db/migrations
+
+cache:
+    # List of directories to be cleared during clear:cache execution
+    directories:
+        - temp
+        # - log
+        # - www/assets/cache
