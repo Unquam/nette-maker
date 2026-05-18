@@ -601,6 +601,113 @@ php nette migrate
 
 ---
 
+### API Resources & Collections
+
+Transform your database models into secure, structured JSON layers with native support for Nette Framework pagination [INDEX: 5, 6].
+
+#### Generating Resources
+
+To generate a single item transformer resource (extends `JsonResource`):
+```bash
+php nette make:resource User
+```
+
+To generate a paginated resource collection transformer (extends `ResourceCollection`):
+```bash
+php nette make:resource UserCollection
+```
+
+#### 1. The Single Item Resource (`UserResource.php`)
+Safely filter your database fields inside the `toArray()` block to prevent sensitive credentials leaks:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Presentation\Api\Resources;
+
+use Unquam\NetteMaker\Resources\JsonResource;
+
+class UserResource extends JsonResource
+{
+    public function toArray(): array
+    {
+        return [
+            'id' => (int) \$this->resource->id,
+            'email' => (string) \$this->resource->email,
+        ];
+    }
+}
+```
+
+#### 2. The Resource Collection (`UserCollection.php`)
+Define which single item resource class should map the nesting loop:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Presentation\Api\Resources;
+
+use Unquam\NetteMaker\Resources\ResourceCollection;
+
+class UserCollection extends ResourceCollection
+{
+    protected function collectWith(): string
+    {
+        return UserResource::class;
+    }
+}
+```
+
+#### Usage in Presenters
+
+##### Case A: Single Item Response
+```php
+\(user =\)this->explorer->table('users')->get(1);
+\(this->sendJson(UserResource::make(\)user));
+```
+
+##### Case B: Paginated Collection Response
+Natively maps Nette Database query streams (`Selection`) combined with pagination settings out-of-the-box:
+
+```php
+// Select records for page 2, limiting to 15 entries per page
+\(users =\)this->explorer->table('users')->page(2, 15);
+
+// Automatically injects structured data and pagination meta hashes
+\(this->sendJson(UserCollection::make(\)users));
+```
+
+**JSON Output Format:**
+```json
+{
+  "data": [
+    { "id": 16, "email": "user16@test.com" },
+    { "id": 17, "email": "user17@test.com" }
+  ],
+  "meta": {
+    "current_page": 2,
+    "per_page": 15,
+    "last_page": 4,
+    "total": 52,
+    "from": 16,
+    "to": 30
+  }
+}
+```
+
+#### 🔐 REST API Authentication Integration
+
+If you need to protect these generated JSON endpoints with lightweight, secure bearer access/refresh tokens, use our native companion API package:
+
+👉 **[unquam/nette-api-auth](https://packagist.org)**
+
+It provides full token life-cycle management, strict CORS controls, and built-in rate-limiting filters out-of-the-box.
+
+---
 
 ### `clear:cache`
 

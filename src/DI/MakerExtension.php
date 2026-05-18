@@ -16,6 +16,7 @@ use Unquam\NetteMaker\Commands\MakeModelCommand;
 use Unquam\NetteMaker\Commands\MakeModuleCommand;
 use Unquam\NetteMaker\Commands\MakePresenterCommand;
 use Unquam\NetteMaker\Commands\MakeRepositoryCommand;
+use Unquam\NetteMaker\Commands\MakeResourceCommand;
 use Unquam\NetteMaker\Commands\MakeSeederCommand;
 use Unquam\NetteMaker\Commands\MakeServiceCommand;
 use Unquam\NetteMaker\Commands\SeedCommand;
@@ -98,6 +99,10 @@ class MakerExtension extends CompilerExtension
 
         $builder->addDefinition($this->prefix('makeAuth'))
             ->setFactory(MakeAuthCommand::class, [$configFile])
+            ->setTags($tags);
+
+        $builder->addDefinition($this->prefix('makeResource'))
+            ->setFactory(MakeResourceCommand::class, [$configFile])
             ->setTags($tags);
     }
 }

@@ -1,0 +1,18 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Presentation\Api\Resources;
+
+use Unquam\NetteMaker\Resources\ResourceCollection;
+
+class {{name}}Collection extends ResourceCollection
+{
+    /**
+     * Define the single item transformer mapping class key reference.
+     */
+    protected function collectWith(): string
+    {
+        return {{name}}Resource::class;
+    }
+}
