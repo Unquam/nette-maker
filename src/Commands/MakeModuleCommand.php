@@ -30,7 +30,7 @@ class MakeModuleCommand extends Command
 
     public function __construct(string $configFile)
     {
-        parent::__construct();
+        parent::__construct('make:module');
         $this->configFile = $configFile;
     }
 

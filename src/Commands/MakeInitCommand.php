@@ -20,7 +20,7 @@ class MakeInitCommand extends Command
 
     public function __construct(string $projectPath)
     {
-        parent::__construct();
+        parent::__construct('make:init');
         $this->projectPath = $projectPath;
     }
 

@@ -22,7 +22,7 @@ class MigrateCommand extends Command
 
     public function __construct(string $configPath)
     {
-        parent::__construct();
+        parent::__construct('migrate');
         $this->configPath = $configPath;
     }
 

@@ -30,16 +30,22 @@ A CLI code generator for [Nette Framework](https://nette.org). Scaffold presente
 composer require unquam/nette-maker
 ```
 
-After installation Composer runs `Unquam\NetteMaker\Composer\ScriptHandler::install` automatically (via `post-autoload-dump`). This creates two files in your project root:
+Since this package is a Composer Plugin, during installation Composer will ask:
+
+Do you trust "unquam/nette-maker" to execute code and wish to enable it now? (writes "allow-plugins" to composer.json) [y,n,d,?]
+
+Press `y` to allow. The plugin will automatically create two files in your project root:
 
 | File | Purpose |
 |---|---|
 | `nette` | Executable PHP runner — run `php nette <command>` |
 | `nette-maker.neon` | Configuration file (database credentials, migrations path) |
 
-You can also create the config file manually at any time:
+If you pressed `n`, create the runner manually:
 
 ```bash
+cp vendor/bin/nette-maker nette
+chmod +x nette
 php nette make:init
 ```
 
