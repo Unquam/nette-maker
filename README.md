@@ -224,16 +224,27 @@ return new class
 {
     public function up(TableBuilder $builder): void
     {
-        $builder->create('articles', function (TableBuilder $table): void {
+        $builder->create('{{table}}', function (TableBuilder $table): void {
             $table->id();
-            // Add your columns here: $table->string('email')->unique();
+            // Available column types:
+            // $table->string('title');
+            // $table->string('slug', 191);
+            // $table->text('body');
+            // $table->integer('views');
+            // $table->bigInteger('score');
+            // $table->boolean('is_active');
+            // $table->float('rating');
+            // $table->decimal('price', 10, 2);
+            // $table->timestamp('published_at');
+            // $table->timestamps();
+            // Modifiers: ->nullable(), ->default('value'), ->unique()
             $table->timestamps();
         });
     }
 
     public function down(TableBuilder $builder): void
     {
-        $builder->drop('articles');
+        $builder->drop('{{table}}');
     }
 };
 ```
