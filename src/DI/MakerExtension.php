@@ -6,6 +6,7 @@ namespace Unquam\NetteMaker\DI;
 
 use Nette\DI\CompilerExtension;
 use Unquam\NetteMaker\Commands\ClearCacheCommand;
+use Unquam\NetteMaker\Commands\FreshCommand;
 use Unquam\NetteMaker\Commands\MakeInitCommand;
 use Unquam\NetteMaker\Commands\MakeLatteCommand;
 use Unquam\NetteMaker\Commands\MakeMigrationCommand;
@@ -16,6 +17,7 @@ use Unquam\NetteMaker\Commands\MakeRepositoryCommand;
 use Unquam\NetteMaker\Commands\MakeSeederCommand;
 use Unquam\NetteMaker\Commands\MakeServiceCommand;
 use Unquam\NetteMaker\Commands\SeedCommand;
+use Unquam\NetteMaker\Commands\WipeCommand;
 use Unquam\NetteMaker\Migration\MigrateCommand;
 
 class MakerExtension extends CompilerExtension
@@ -48,6 +50,10 @@ class MakerExtension extends CompilerExtension
             ->setFactory(MakeMigrationCommand::class, [$configFile])
             ->setTags($tags);
 
+        $builder->addDefinition($this->prefix('makeSeeder'))
+            ->setFactory(MakeSeederCommand::class, [$configFile])
+            ->setTags($tags);
+
         $builder->addDefinition($this->prefix('makeLatte'))
             ->setFactory(MakeLatteCommand::class)
             ->setTags($tags);
@@ -68,16 +74,20 @@ class MakerExtension extends CompilerExtension
             ->setFactory(MigrateCommand::class, [$configFile])
             ->setTags($tags);
 
-        $builder->addDefinition($this->prefix('clearCache'))
-            ->setFactory(ClearCacheCommand::class, [$configFile])
-            ->setTags($tags);
-
-        $builder->addDefinition($this->prefix('makeSeeder'))
-            ->setFactory(MakeSeederCommand::class, [$configFile])
+        $builder->addDefinition($this->prefix('migrateFresh'))
+            ->setFactory(FreshCommand::class, [$configFile])
             ->setTags($tags);
 
         $builder->addDefinition($this->prefix('dbSeed'))
             ->setFactory(SeedCommand::class, [$configFile])
+            ->setTags($tags);
+
+        $builder->addDefinition($this->prefix('dbWipe'))
+            ->setFactory(WipeCommand::class, [$configFile])
+            ->setTags($tags);
+
+        $builder->addDefinition($this->prefix('clearCache'))
+            ->setFactory(ClearCacheCommand::class, [$configFile])
             ->setTags($tags);
     }
 }

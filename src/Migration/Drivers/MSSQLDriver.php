@@ -160,4 +160,21 @@ CREATE TABLE [{$table}] (
         // Returns empty string to handle execution gracefully inside TableBuilder.
         return '';
     }
+
+    public function compileShowTables(): string
+    {
+        return "SELECT name FROM sys.tables WHERE is_ms_shipped = 0 ORDER BY name;";
+    }
+
+    public function compileDisableForeignKeys(): string
+    {
+        // MS SQL requires a multi-statement execution routine.
+        // We evaluate this sequence via standard inline system execution blocks inside DatabaseWiper.
+        return "EXEC sp_msforeachtable 'ALTER TABLE ? NOCHECK CONSTRAINT ALL';";
+    }
+
+    public function compileEnableForeignKeys(): string
+    {
+        return "EXEC sp_msforeachtable 'ALTER TABLE ? WITH CHECK CHECK CONSTRAINT ALL';";
+    }
 }

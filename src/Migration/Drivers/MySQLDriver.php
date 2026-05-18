@@ -159,4 +159,20 @@ class MySQLDriver implements DriverInterface
         // Handled cleanly within modifiers, returns string suffix statement
         return "AFTER `{$afterColumn}`";
     }
+
+    // Add inside MySQLDriver.php:
+    public function compileShowTables(): string
+    {
+        return 'SHOW TABLES';
+    }
+
+    public function compileDisableForeignKeys(): string
+    {
+        return 'SET FOREIGN_KEY_CHECKS = 0;';
+    }
+
+    public function compileEnableForeignKeys(): string
+    {
+        return 'SET FOREIGN_KEY_CHECKS = 1;';
+    }
 }

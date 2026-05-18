@@ -160,4 +160,19 @@ class PostgresDriver implements DriverInterface
         // Returning an empty string prevents string duplication bugs in TableBuilder.
         return '';
     }
+
+    public function compileShowTables(): string
+    {
+        return "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE' ORDER BY table_name;";
+    }
+
+    public function compileDisableForeignKeys(): string
+    {
+        return "SET CONSTRAINTS ALL DEFERRED;";
+    }
+
+    public function compileEnableForeignKeys(): string
+    {
+        return "SET CONSTRAINTS ALL IMMEDIATE;";
+    }
 }

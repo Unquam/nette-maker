@@ -10,6 +10,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Unquam\NetteMaker\Exceptions\GeneratorException;
 use Unquam\NetteMaker\Generators\LatteGenerator;
@@ -40,7 +41,7 @@ class MakeModuleCommand extends Command
     protected function configure(): void
     {
         $this
-            ->addArgument('name', InputArgument::REQUIRED, 'The name of the module')
+            ->addArgument('name', InputArgument::OPTIONAL, 'The name of the module')
             ->addOption('no-presenter', null, InputOption::VALUE_NONE, 'Skip presenter generation')
             ->addOption('no-model', null, InputOption::VALUE_NONE, 'Skip model generation')
             ->addOption('no-migration', null, InputOption::VALUE_NONE, 'Skip migration generation')
@@ -50,10 +51,40 @@ class MakeModuleCommand extends Command
             ->addOption('only', null, InputOption::VALUE_REQUIRED, 'Generate only specific parts - presenter, model, repository, service, migration, latte');
     }
 
+    protected function interact(InputInterface $input, OutputInterface $output): void
+    {
+        if ($input->getArgument('name') !== null && $input->getArgument('name') !== '') {
+            return;
+        }
+
+        $helper = $this->getHelper('question');
+        $question = new Question(
+            '<fg=cyan>? Enter the name of the module (e.g. Article):</fg=cyan> '
+        );
+
+        $question->setValidator(function ($answer) {
+            if ($answer === null || trim((string) $answer) === '') {
+                throw new \RuntimeException('The module name cannot be empty.');
+            }
+            return trim((string) $answer);
+        });
+
+        /** @var string $name */
+        $name = $helper->ask($input, $output, $question);
+        $input->setArgument('name', $name);
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
         $rawName = $input->getArgument('name');
+
+        // Extra fallback protection if execution somehow bypasses interaction boundaries
+        if ($rawName === null || $rawName === '') {
+            $io->error('The module name is required.');
+            return Command::FAILURE;
+        }
+
         $name = Inflector::toClassName($rawName);
         $basePath = dirname($this->configFile);
         $only = $input->getOption('only');
@@ -124,7 +155,6 @@ class MakeModuleCommand extends Command
             }
         }
 
-        // Output formatting structured into standard blocks if any execution boundary fails
         if (!empty($errors)) {
             $io->newLine();
             foreach ($errors as $error) {
@@ -146,7 +176,7 @@ class MakeModuleCommand extends Command
 
         $config = Neon::decodeFile($this->configFile);
         if (isset($config['migrations']['directory'])) {
-            return $basePath . '/' . ltrim($config['migrations']['directory'], '/');
+            return $basePath . '/' . ltrim((string) $config['migrations']['directory'], '/');
         }
 
         return $defaultDir;

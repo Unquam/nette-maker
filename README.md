@@ -429,6 +429,41 @@ db/
 
 ---
 
+### Interactive Prompts
+
+All code generation commands now support a smart interactive mode. If you forget to provide the name argument, the CLI will seamlessly prompt you for input in real-time:
+
+```bash
+php nette make:module
+? Enter the name of the module (e.g. Article): 
+```
+
+### Database Wiping (`db:wipe`)
+
+Completely drops all tables from the database tracking schema layout without running slower down methods. It safely disables foreign key constraints internally during the process:
+
+```bash
+php nette db:wipe
+```
+
+### Database Fresh Reset (`migrate:fresh`)
+
+Drops all database tables completely and re-runs all migration scripts sequentially from scratch. This provides a fresh starting state for local development:
+
+```bash
+php nette migrate:fresh
+```
+
+You can automatically run database seeders right after resetting your database schema using the `--seed` (or `-s`) shortcut flag:
+
+```bash
+php nette migrate:fresh --seed
+# or shortcut notation format
+php nette migrate:fresh -s
+```
+
+---
+
 ### Database Seeding
 
 Seed the database with records sequentially or run a specific seeder class.

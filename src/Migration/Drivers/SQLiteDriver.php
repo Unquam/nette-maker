@@ -161,4 +161,19 @@ class SQLiteDriver implements DriverInterface
         // Returns an empty string to keep the core statement stable via TableBuilder.
         return '';
     }
+
+    public function compileShowTables(): string
+    {
+        return "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name;";
+    }
+
+    public function compileDisableForeignKeys(): string
+    {
+        return "PRAGMA foreign_keys = OFF;";
+    }
+
+    public function compileEnableForeignKeys(): string
+    {
+        return "PRAGMA foreign_keys = ON;";
+    }
 }

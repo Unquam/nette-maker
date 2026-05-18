@@ -6,6 +6,7 @@ namespace Unquam\NetteMaker;
 
 use Symfony\Component\Console\Application as ConsoleApplication;
 use Unquam\NetteMaker\Commands\ClearCacheCommand;
+use Unquam\NetteMaker\Commands\FreshCommand;
 use Unquam\NetteMaker\Commands\MakeInitCommand;
 use Unquam\NetteMaker\Commands\MakeLatteCommand;
 use Unquam\NetteMaker\Commands\MakeMigrationCommand;
@@ -13,12 +14,18 @@ use Unquam\NetteMaker\Commands\MakeModelCommand;
 use Unquam\NetteMaker\Commands\MakeModuleCommand;
 use Unquam\NetteMaker\Commands\MakePresenterCommand;
 use Unquam\NetteMaker\Commands\MakeRepositoryCommand;
+use Unquam\NetteMaker\Commands\MakeSeederCommand;
 use Unquam\NetteMaker\Commands\MakeServiceCommand;
+use Unquam\NetteMaker\Commands\SeedCommand;
+use Unquam\NetteMaker\Commands\WipeCommand;
 use Unquam\NetteMaker\Migration\MigrateCommand;
 
 class Application extends ConsoleApplication
 {
-    private const VERSION = '1.3.0';
+    /** @var string */
+    private const VERSION = '1.4.0';
+
+    /** @var string */
     private const NAME = 'Nette Maker';
 
     public function __construct(string $configFile)
@@ -45,6 +52,12 @@ class Application extends ConsoleApplication
             // Database migrations layer management commands
             new MakeMigrationCommand($configFile),
             new MigrateCommand($configFile),
+            new FreshCommand($configFile),
+
+            // Database seeders layer management commands
+            new MakeSeederCommand($configFile),
+            new SeedCommand($configFile),
+            new WipeCommand($configFile),
 
             // Complete module scaffold generator command
             new MakeModuleCommand($configFile),
@@ -55,10 +68,6 @@ class Application extends ConsoleApplication
             new MakeLatteCommand(),
             new MakeRepositoryCommand(),
             new MakeServiceCommand(),
-
-            // Inside registerCommands() method array:
-            new Commands\MakeSeederCommand($configFile),
-            new Commands\SeedCommand($configFile),
         ]);
     }
 }

@@ -61,4 +61,11 @@ interface DriverInterface
 
     // After (MySQL/MariaDB only - other drivers return empty string)
     public function compileAfter(string $column, string $afterColumn): string;
+
+    // Add inside DriverInterface.php:
+    public function compileShowTables(): string;
+
+    public function compileDisableForeignKeys(): string;
+
+    public function compileEnableForeignKeys(): string;
 }
