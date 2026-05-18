@@ -603,7 +603,7 @@ php nette migrate
 
 ### API Resources & Collections
 
-Transform your database models into secure, structured JSON layers with native support for Nette Framework pagination [INDEX: 5, 6].
+Transform your database models into secure, structured JSON layers with native support for Nette Framework pagination.
 
 #### Generating Resources
 
