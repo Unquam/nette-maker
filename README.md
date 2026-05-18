@@ -703,7 +703,7 @@ Natively maps Nette Database query streams (`Selection`) combined with paginatio
 
 If you need to protect these generated JSON endpoints with lightweight, secure bearer access/refresh tokens, use our native companion API package:
 
-👉 **[unquam/nette-api-auth](https://packagist.org)**
+👉 **[unquam/nette-api-auth](https://packagist.org/packages/unquam/nette-api-auth)**
 
 It provides full token life-cycle management, strict CORS controls, and built-in rate-limiting filters out-of-the-box.
 
