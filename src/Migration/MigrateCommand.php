@@ -66,15 +66,16 @@ class MigrateCommand extends Command
         $ran = $runner->run();
 
         if (empty($ran)) {
-            $io->info('Nothing to migrate.');
+            $io->writeln('<fg=yellow>⚠ Nothing to migrate.</fg=yellow>');
             return Command::SUCCESS;
         }
 
         foreach ($ran as $migration) {
-            $io->writeln('<info>Migrated:</info> ' . $migration);
+            $io->writeln('<fg=green>Migrated:</fg=green> ' . $migration);
         }
 
-        $io->success('All migrations ran successfully!');
+        $io->newLine();
+        $io->writeln('<fg=green>✓ All migrations ran successfully!</fg=green>');
         return Command::SUCCESS;
     }
 
@@ -83,15 +84,16 @@ class MigrateCommand extends Command
         $rolledBack = $runner->rollback();
 
         if (empty($rolledBack)) {
-            $io->info('Nothing to rollback.');
+            $io->writeln('<fg=yellow>⚠ Nothing to rollback.</fg=yellow>');
             return Command::SUCCESS;
         }
 
         foreach ($rolledBack as $migration) {
-            $io->writeln('<comment>Rolled back:</comment> ' . $migration);
+            $io->writeln('<fg=green>✓ Rolled back:</fg=green> ' . $migration);
         }
 
-        $io->success('Rollback completed!');
+        $io->newLine();
+        $io->writeln('<fg=green>✓ Rollback completed!</fg=green>');
         return Command::SUCCESS;
     }
 
@@ -100,16 +102,17 @@ class MigrateCommand extends Command
         $status = $runner->status();
 
         if (empty($status)) {
-            $io->info('No migrations found.');
+            $io->writeln('<fg=yellow>⚠ No migrations found.</fg=yellow>');
             return Command::SUCCESS;
         }
 
-        $io->section('Migration Statuses');
+        $io->writeln('<fg=cyan>Migration Statuses:</>');
+        $io->newLine();
 
         foreach ($status as $row) {
             $state = $row['ran']
-                ? '<info>[Ran]</info>    '
-                : '<comment>[Pending]</comment>';
+                ? '<fg=green>[Ran]</fg=green>    '
+                : '<fg=yellow>[Pending]</fg=yellow>';
 
             $io->writeln($state . ' ' . $row['migration']);
         }
