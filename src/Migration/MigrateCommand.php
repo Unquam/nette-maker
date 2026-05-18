@@ -9,108 +9,109 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 use Unquam\NetteMaker\Exceptions\MigrationException;
 
 class MigrateCommand extends Command
 {
+    /** @var string */
     protected static $defaultName = 'migrate';
 
-    private string $configPath;
+    /** @var string */
+    protected static $defaultDescription = 'Run or rollback database migrations';
 
-    /** @var array<string, mixed> */
-    private array $config = [];
+    /** @var string */
+    private $configPath;
 
     public function __construct(string $configPath)
     {
+        // Explicitly pass command name to the parent constructor to prevent any Symfony Console errors
         parent::__construct('migrate');
         $this->configPath = $configPath;
     }
 
     protected function configure(): void
     {
+        // Cleaned up: removed setDescription and setName to eliminate syntax duplication
         $this
-            ->setName('migrate')
-            ->setDescription('Run or rollback database migrations')
             ->addOption('rollback', null, InputOption::VALUE_NONE, 'Rollback the last batch of migrations')
             ->addOption('status', null, InputOption::VALUE_NONE, 'Show the status of all migrations');
     }
 
-    /**
-     * @param array<string, mixed> $config
-     */
-    public function setConfig(array $config): void
-    {
-        $this->config = $config;
-    }
-
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $io = new SymfonyStyle($input, $output);
+
         try {
             $runner = $this->createRunner();
 
             if ($input->getOption('status')) {
-                return $this->showStatus($runner, $output);
+                return $this->showStatus($runner, $io);
             }
 
             if ($input->getOption('rollback')) {
-                return $this->rollback($runner, $output);
+                return $this->rollback($runner, $io);
             }
 
-            return $this->migrate($runner, $output);
+            return $this->migrate($runner, $io);
 
         } catch (MigrationException $e) {
-            $output->writeln('<error>' . $e->getMessage() . '</error>');
+            $io->error($e->getMessage());
             return Command::FAILURE;
         }
     }
 
-    private function migrate(MigrationRunner $runner, OutputInterface $output): int
+    private function migrate(MigrationRunner $runner, SymfonyStyle $io): int
     {
         $ran = $runner->run();
 
         if (empty($ran)) {
-            $output->writeln('<info>Nothing to migrate.</info>');
+            $io->info('Nothing to migrate.');
             return Command::SUCCESS;
         }
 
         foreach ($ran as $migration) {
-            $output->writeln('<info>Migrated:</info> ' . $migration);
+            $io->writeln('<info>Migrated:</info> ' . $migration);
         }
 
+        $io->success('All migrations ran successfully!');
         return Command::SUCCESS;
     }
 
-    private function rollback(MigrationRunner $runner, OutputInterface $output): int
+    private function rollback(MigrationRunner $runner, SymfonyStyle $io): int
     {
         $rolledBack = $runner->rollback();
 
         if (empty($rolledBack)) {
-            $output->writeln('<info>Nothing to rollback.</info>');
+            $io->info('Nothing to rollback.');
             return Command::SUCCESS;
         }
 
         foreach ($rolledBack as $migration) {
-            $output->writeln('<comment>Rolled back:</comment> ' . $migration);
+            $io->writeln('<comment>Rolled back:</comment> ' . $migration);
         }
 
+        $io->success('Rollback completed!');
         return Command::SUCCESS;
     }
 
-    private function showStatus(MigrationRunner $runner, OutputInterface $output): int
+    private function showStatus(MigrationRunner $runner, SymfonyStyle $io): int
     {
         $status = $runner->status();
 
         if (empty($status)) {
-            $output->writeln('<info>No migrations found.</info>');
+            $io->info('No migrations found.');
             return Command::SUCCESS;
         }
 
+        $io->section('Migration Statuses');
+
         foreach ($status as $row) {
             $state = $row['ran']
-                ? '<info>Ran</info>    '
-                : '<comment>Pending</comment>';
+                ? '<info>[Ran]</info>    '
+                : '<comment>[Pending]</comment>';
 
-            $output->writeln($state . ' ' . $row['migration']);
+            $io->writeln($state . ' ' . $row['migration']);
         }
 
         return Command::SUCCESS;
@@ -134,18 +135,13 @@ class MigrateCommand extends Command
     }
 
     /**
-     * Resolve database configuration from injected config array or from nette-maker.neon.
+     * Resolve database configuration from nette-maker.neon.
      *
      * @return array<string, mixed>
      * @throws MigrationException
      */
     private function resolveConfig(): array
     {
-        // Config was injected directly (e.g. from DI container)
-        if (!empty($this->config['dsn'])) {
-            return $this->normalizeConfig($this->config);
-        }
-
         if (!file_exists($this->configPath)) {
             throw new MigrationException('Config file not found: ' . $this->configPath);
         }
@@ -184,7 +180,6 @@ class MigrateCommand extends Command
     private function normalizeConfig(array $config): array
     {
         if (empty($config['driver'])) {
-            // Parse driver prefix from DSN, e.g. "mysql:host=..."  → "mysql"
             $dsn = (string) ($config['dsn'] ?? '');
             $colonPos = strpos($dsn, ':');
 
@@ -198,7 +193,7 @@ class MigrateCommand extends Command
         }
 
         if (empty($config['migrations_dir'])) {
-            $config['migrations_dir'] = getcwd() . '/db/migrations';
+            $config['migrations_dir'] = dirname($this->configPath) . '/db/migrations';
         }
 
         return $config;

@@ -5,19 +5,17 @@ declare(strict_types=1);
 namespace Unquam\NetteMaker\Generators;
 
 use Nette\PhpGenerator\PhpFile;
-use Nette\PhpGenerator\PsrPrinter;
 use Unquam\NetteMaker\Exceptions\GeneratorException;
 use Unquam\NetteMaker\Support\Inflector;
 
 class RepositoryGenerator
 {
-    private string $basePath;
-    private PsrPrinter $printer;
+    /** @var string */
+    private $basePath;
 
     public function __construct(string $basePath)
     {
         $this->basePath = rtrim($basePath, '/');
-        $this->printer = new PsrPrinter();
     }
 
     public function generate(string $name): string
@@ -25,7 +23,7 @@ class RepositoryGenerator
         $dir = $this->basePath . '/app/Model/Repositories';
         $file = $dir . '/' . $name . 'Repository.php';
 
-        if (!is_dir($dir) && !mkdir($dir, 0755, true)) {
+        if (!is_dir($dir) && !@mkdir($dir, 0755, true) && !is_dir($dir)) {
             throw new GeneratorException('Failed to create directory: ' . $dir);
         }
 
@@ -57,24 +55,36 @@ class RepositoryGenerator
         $class->addConstant('TABLE', Inflector::toTableName($name))
             ->setPrivate();
 
-        $class->addMethod('__construct')
-            ->setPublic()
-            ->addPromotedParameter('explorer')
+        // 1. from PHP 7.4 - typed property
+        $class->addProperty('explorer')
             ->setPrivate()
-            ->setType('Explorer');
+            ->setType('Nette\Database\Explorer');
 
+        // 2. Constructor
+        $constructor = $class->addMethod('__construct')
+            ->setPublic();
+
+        $constructor->addParameter('explorer')
+            ->setType('Nette\Database\Explorer');
+
+        $constructor->addBody('$this->explorer = $explorer;');
+
+        // 3. Method findAll
         $class->addMethod('findAll')
             ->setPublic()
-            ->setReturnType('Selection')
+            ->setReturnType('Nette\Database\Table\Selection')
             ->setBody('return $this->explorer->table(self::TABLE);');
 
-        $class->addMethod('findById')
+        // 4. Method findById
+        $findById = $class->addMethod('findById')
             ->setPublic()
-            ->setReturnType('mixed')
-            ->setBody('return $this->explorer->table(self::TABLE)->get($id);')
-            ->addParameter('id')
+            ->setReturnType('mixed');  // No return type - mixed is PHP 8.0+ only
+
+        $findById->addParameter('id')
             ->setType('int');
 
-        return $this->printer->printFile($file);
+        $findById->setBody('return $this->explorer->table(self::TABLE)->get($id);');
+
+        return (string) $file;
     }
 }

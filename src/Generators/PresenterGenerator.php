@@ -4,20 +4,17 @@ declare(strict_types=1);
 
 namespace Unquam\NetteMaker\Generators;
 
-use Nette\PhpGenerator\ClassType;
 use Nette\PhpGenerator\PhpFile;
-use Nette\PhpGenerator\PsrPrinter;
 use Unquam\NetteMaker\Exceptions\GeneratorException;
 
 class PresenterGenerator
 {
-    private string $basePath;
-    private PsrPrinter $printer;
+    /** @var string */
+    private $basePath;
 
     public function __construct(string $basePath)
     {
         $this->basePath = rtrim($basePath, '/');
-        $this->printer = new PsrPrinter();
     }
 
     public function generate(string $name): string
@@ -25,7 +22,7 @@ class PresenterGenerator
         $dir = $this->basePath . '/app/Presentation/' . $name;
         $file = $dir . '/' . $name . 'Presenter.php';
 
-        if (!is_dir($dir) && !mkdir($dir, 0755, true)) {
+        if (!is_dir($dir) && !@mkdir($dir, 0755, true) && !is_dir($dir)) {
             throw new GeneratorException('Failed to create directory: ' . $dir);
         }
 
@@ -51,12 +48,12 @@ class PresenterGenerator
         $namespace->addUse('Nette\Application\UI\Presenter');
 
         $class = $namespace->addClass($name . 'Presenter');
-        $class->setExtends('Presenter');
+        $class->setExtends('Nette\Application\UI\Presenter');
         $class->setFinal();
 
         $class->addMethod('renderDefault')
             ->setReturnType('void');
 
-        return $this->printer->printFile($file);
+        return (string) $file;
     }
 }

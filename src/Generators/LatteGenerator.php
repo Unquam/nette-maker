@@ -8,7 +8,8 @@ use Unquam\NetteMaker\Exceptions\GeneratorException;
 
 class LatteGenerator
 {
-    private string $basePath;
+    /** @var string */
+    private $basePath;
 
     public function __construct(string $basePath)
     {
@@ -20,7 +21,7 @@ class LatteGenerator
         $dir = $this->basePath . '/app/Presentation/' . $name;
         $file = $dir . '/default.latte';
 
-        if (!is_dir($dir) && !mkdir($dir, 0755, true)) {
+        if (!is_dir($dir) && !@mkdir($dir, 0755, true) && !is_dir($dir)) {
             throw new GeneratorException('Failed to create directory: ' . $dir);
         }
 
@@ -28,7 +29,13 @@ class LatteGenerator
             throw new GeneratorException('Latte template already exists: ' . $file);
         }
 
-        if (file_put_contents($file, '') === false) {
+        $content = "{block content}\n" .
+            "<div id=\"content\">\n" .
+            "    <h1>{$name} Module</h1>\n" .
+            "    <p>Find me in app/Presentation/{$name}/default.latte</p>\n" .
+            "</div>\n";
+
+        if (file_put_contents($file, $content) === false) {
             throw new GeneratorException('Failed to write file: ' . $file);
         }
 

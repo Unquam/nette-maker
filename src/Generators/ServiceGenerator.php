@@ -5,18 +5,16 @@ declare(strict_types=1);
 namespace Unquam\NetteMaker\Generators;
 
 use Nette\PhpGenerator\PhpFile;
-use Nette\PhpGenerator\PsrPrinter;
 use Unquam\NetteMaker\Exceptions\GeneratorException;
 
 class ServiceGenerator
 {
-    private string $basePath;
-    private PsrPrinter $printer;
+    /** @var string */
+    private $basePath;
 
     public function __construct(string $basePath)
     {
         $this->basePath = rtrim($basePath, '/');
-        $this->printer = new PsrPrinter();
     }
 
     public function generate(string $name): string
@@ -24,7 +22,7 @@ class ServiceGenerator
         $dir = $this->basePath . '/app/Model/Services';
         $file = $dir . '/' . $name . 'Service.php';
 
-        if (!is_dir($dir) && !mkdir($dir, 0755, true)) {
+        if (!is_dir($dir) && !@mkdir($dir, 0755, true) && !is_dir($dir)) {
             throw new GeneratorException('Failed to create directory: ' . $dir);
         }
 
@@ -46,18 +44,28 @@ class ServiceGenerator
         $file = new PhpFile();
         $file->setStrictTypes();
 
+        $repositoryClass = 'App\Model\Repositories\\' . $name . 'Repository';
+
         $namespace = $file->addNamespace('App\Model\Services');
-        $namespace->addUse('App\Model\Repositories\\' . $name . 'Repository');
+        $namespace->addUse($repositoryClass);
 
         $class = $namespace->addClass($name . 'Service');
         $class->setFinal();
 
-        $class->addMethod('__construct')
-            ->setPublic()
-            ->addPromotedParameter('repository')
+        // 1. Declare the class property explicitly for PHP 7.4 compatibility
+        $class->addProperty('repository')
             ->setPrivate()
-            ->setType($name . 'Repository');
+            ->setType($repositoryClass);
 
-        return $this->printer->printFile($file);
+        // 2. Build a standard constructor with dependency assignment in the method body
+        $constructor = $class->addMethod('__construct')
+            ->setPublic();
+
+        $constructor->addParameter('repository')
+            ->setType($repositoryClass);
+
+        $constructor->addBody('$this->repository = $repository;');
+
+        return (string) $file;
     }
 }

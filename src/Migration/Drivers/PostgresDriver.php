@@ -17,7 +17,14 @@ class PostgresDriver implements DriverInterface
 
     public function compileCreate(string $table, array $columns): string
     {
-        $columnsSql = implode(",\n    ", $columns);
+        $cleanedColumns = array_map(function (string $col) {
+            return rtrim(trim($col), ',');
+        }, $columns);
+
+        $cleanedColumns = array_filter($cleanedColumns);
+
+        $columnsSql = implode(",\n    ", $cleanedColumns);
+
         return "CREATE TABLE \"{$table}\" (\n    {$columnsSql}\n);";
     }
 
@@ -53,7 +60,7 @@ class PostgresDriver implements DriverInterface
 
     public function compileBoolean(string $column): string
     {
-        return "\"{$column}\" BOOLEAN NOT NULL DEFAULT FALSE";
+        return "\"{$column}\" BOOLEAN NOT NULL";
     }
 
     public function compileText(string $column): string
@@ -82,16 +89,29 @@ class PostgresDriver implements DriverInterface
     }
 
     /**
+     * @param string $column
      * @param mixed $value
+     * @return string
      */
     public function compileDefault(string $column, $value): string
     {
-        $compiled = is_string($value) ? "'{$value}'" : $value;
-        return preg_replace('/DEFAULT \S+|$/', "DEFAULT {$compiled}", $column, 1);
+        if (is_bool($value)) {
+            $compiled = $value ? 'TRUE' : 'FALSE';
+        } elseif (is_string($value)) {
+            $compiled = "'{$value}'";
+        } else {
+            $compiled = $value;
+        }
+
+        if (strpos($column, 'DEFAULT') !== false) {
+            return preg_replace('/DEFAULT \S+/', "DEFAULT {$compiled}", $column, 1);
+        }
+
+        return rtrim($column) . " DEFAULT {$compiled}";
     }
 
     public function compileUnique(string $column): string
     {
-        return $column . ' UNIQUE';
+        return rtrim($column) . ' UNIQUE';
     }
 }

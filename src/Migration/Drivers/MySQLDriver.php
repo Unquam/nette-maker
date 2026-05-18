@@ -17,7 +17,14 @@ class MySQLDriver implements DriverInterface
 
     public function compileCreate(string $table, array $columns): string
     {
-        $columnsSql = implode(",\n    ", $columns);
+        $cleanedColumns = array_map(function (string $col) {
+            return rtrim(trim($col), ',');
+        }, $columns);
+
+        $cleanedColumns = array_filter($cleanedColumns);
+
+        $columnsSql = implode(",\n    ", $cleanedColumns);
+
         return "CREATE TABLE `{$table}` (\n    {$columnsSql}\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
     }
 
@@ -53,7 +60,7 @@ class MySQLDriver implements DriverInterface
 
     public function compileBoolean(string $column): string
     {
-        return "`{$column}` TINYINT(1) NOT NULL DEFAULT 0";
+        return "`{$column}` TINYINT(1) NOT NULL";
     }
 
     public function compileText(string $column): string
@@ -82,16 +89,29 @@ class MySQLDriver implements DriverInterface
     }
 
     /**
+     * @param string $column
      * @param mixed $value
+     * @return string
      */
     public function compileDefault(string $column, $value): string
     {
-        $compiled = is_string($value) ? "'{$value}'" : $value;
-        return preg_replace('/DEFAULT \S+|$/', "DEFAULT {$compiled}", $column, 1);
+        if (is_bool($value)) {
+            $compiled = $value ? '1' : '0';
+        } elseif (is_string($value)) {
+            $compiled = "'{$value}'";
+        } else {
+            $compiled = $value;
+        }
+
+        if (strpos($column, 'DEFAULT') !== false) {
+            return preg_replace('/DEFAULT \S+/', "DEFAULT {$compiled}", $column, 1);
+        }
+
+        return rtrim($column) . " DEFAULT {$compiled}";
     }
 
     public function compileUnique(string $column): string
     {
-        return $column . ' UNIQUE';
+        return rtrim($column) . ' UNIQUE';
     }
 }

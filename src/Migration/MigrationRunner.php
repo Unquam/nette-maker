@@ -9,10 +9,17 @@ use Unquam\NetteMaker\Migration\Drivers\DriverInterface;
 
 class MigrationRunner
 {
-    private \PDO $pdo;
-    private DriverInterface $driver;
-    private string $migrationsPath;
-    private string $migrationsTable = 'nette_migrations';
+    /** @var \PDO */
+    private $pdo;
+
+    /** @var DriverInterface */
+    private $driver;
+
+    /** @var string */
+    private $migrationsPath;
+
+    /** @var string */
+    private $migrationsTable = 'nette_migrations';
 
     public function __construct(\PDO $pdo, DriverInterface $driver, string $migrationsPath)
     {
@@ -37,12 +44,23 @@ class MigrationRunner
             $builder = new TableBuilder($this->driver);
             $migration->up($builder);
 
-            foreach ($builder->getStatements() as $statement) {
-                $this->pdo->exec($statement);
-            }
+            try {
+                $this->pdo->beginTransaction();
 
-            $this->markAsRan($file);
-            $ran[] = basename($file);
+                foreach ($builder->getStatements() as $statement) {
+                    $this->pdo->exec($statement);
+                }
+
+                $this->markAsRan($file);
+                $this->pdo->commit();
+
+                $ran[] = basename($file);
+            } catch (\Throwable $e) {
+                if ($this->pdo->inTransaction()) {
+                    $this->pdo->rollBack();
+                }
+                throw new MigrationException(sprintf('Migration [%s] failed: %s', basename($file), $e->getMessage()), 0, $e);
+            }
         }
 
         return $ran;
@@ -69,12 +87,23 @@ class MigrationRunner
             $builder = new TableBuilder($this->driver);
             $migration->down($builder);
 
-            foreach ($builder->getStatements() as $statement) {
-                $this->pdo->exec($statement);
-            }
+            try {
+                $this->pdo->beginTransaction();
 
-            $this->markAsRolledBack($file);
-            $rolledBack[] = $file;
+                foreach ($builder->getStatements() as $statement) {
+                    $this->pdo->exec($statement);
+                }
+
+                $this->markAsRolledBack($file);
+                $this->pdo->commit();
+
+                $rolledBack[] = $file;
+            } catch (\Throwable $e) {
+                if ($this->pdo->inTransaction()) {
+                    $this->pdo->rollBack();
+                }
+                throw new MigrationException(sprintf('Rollback of [%s] failed: %s', $file, $e->getMessage()), 0, $e);
+            }
         }
 
         return $rolledBack;

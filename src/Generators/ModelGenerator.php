@@ -5,18 +5,16 @@ declare(strict_types=1);
 namespace Unquam\NetteMaker\Generators;
 
 use Nette\PhpGenerator\PhpFile;
-use Nette\PhpGenerator\PsrPrinter;
 use Unquam\NetteMaker\Exceptions\GeneratorException;
 
 class ModelGenerator
 {
-    private string $basePath;
-    private PsrPrinter $printer;
+    /** @var string */
+    private $basePath;
 
     public function __construct(string $basePath)
     {
         $this->basePath = rtrim($basePath, '/');
-        $this->printer = new PsrPrinter();
     }
 
     public function generate(string $name): string
@@ -24,7 +22,7 @@ class ModelGenerator
         $dir = $this->basePath . '/app/Model';
         $file = $dir . '/' . $name . '.php';
 
-        if (!is_dir($dir) && !mkdir($dir, 0755, true)) {
+        if (!is_dir($dir) && !@mkdir($dir, 0755, true) && !is_dir($dir)) {
             throw new GeneratorException('Failed to create directory: ' . $dir);
         }
 
@@ -52,13 +50,18 @@ class ModelGenerator
         $class = $namespace->addClass($name);
         $class->setFinal();
 
-
-        $class->addMethod('__construct')
-            ->setPublic()
-            ->addPromotedParameter('explorer')
+        $class->addProperty('explorer')
             ->setPrivate()
-            ->setType('Explorer');
+            ->setType('Nette\Database\Explorer');
 
-        return $this->printer->printFile($file);
+        $constructor = $class->addMethod('__construct')
+            ->setPublic();
+
+        $constructor->addParameter('explorer')
+            ->setType('Nette\Database\Explorer');
+
+        $constructor->addBody('$this->explorer = $explorer;');
+
+        return (string) $file;
     }
 }
