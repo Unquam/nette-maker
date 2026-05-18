@@ -46,17 +46,14 @@ class PresenterGenerator
         $file->setStrictTypes();
 
         $namespace = $file->addNamespace('App\Presentation\\' . $name);
-        $namespace->addUse('Nette\Application\UI\Presenter');
 
         $class = $namespace->addClass($name . 'Presenter');
-
-        $class->setExtends('Presenter');
+        $class->setExtends('Nette\Application\UI\Presenter');
         $class->setFinal();
 
         $method = $class->addMethod('renderDefault')
             ->setReturnType('void');
 
-        $method->addBody('// Example: Send data to the default.latte template');
         $method->addBody('$this->template->title = ?;', [$name . ' Module']);
         $method->addBody('$this->template->description = \'Welcome to your newly generated component!\';');
 
@@ -64,7 +61,7 @@ class PresenterGenerator
             ? 'Nette\PhpGenerator\PsrPrinter'
             : 'Nette\PhpGenerator\Printer';
 
-        /** @var Printer $printer */
+        /** @var \Nette\PhpGenerator\Printer $printer */
         $printer = new $printerClass();
 
         return $printer->printFile($file);
