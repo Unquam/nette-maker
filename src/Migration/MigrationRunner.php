@@ -45,17 +45,14 @@ class MigrationRunner
             $migration->up($builder);
 
             try {
-                // Removed $this->pdo->beginTransaction() because CREATE TABLE causes implicit commit in MySQL
-
+                // Executing statements sequentially (DDL implicitly commits in MySQL)
                 foreach ($builder->getStatements() as $statement) {
                     $this->pdo->exec($statement);
                 }
 
                 $this->markAsRan($file);
-
                 $ran[] = basename($file);
             } catch (\Throwable $e) {
-                // Removed $this->pdo->rollBack() since DDL statements cannot be rolled back in MySQL anyway
                 throw new MigrationException(sprintf('Migration [%s] failed: %s', basename($file), $e->getMessage()), 0, $e);
             }
         }
@@ -90,52 +87,8 @@ class MigrationRunner
                 }
 
                 $this->markAsRolledBack($file);
-
                 $rolledBack[] = $file;
             } catch (\Throwable $e) {
-                throw new MigrationException(sprintf('Rollback of [%s] failed: %s', $file, $e->getMessage()), 0, $e);
-            }
-        }
-
-        return $rolledBack;
-    }
-
-    public function rollback(): array
-    {
-        $files = $this->getRanMigrations();
-        $rolledBack = [];
-
-        foreach (array_reverse($files) as $file) {
-            $fullPath = $this->migrationsPath . '/' . $file;
-
-            if (!file_exists($fullPath)) {
-                throw new MigrationException('Migration file not found: ' . $fullPath);
-            }
-
-            $migration = require $fullPath;
-
-            if (!is_object($migration) || !method_exists($migration, 'down')) {
-                throw new MigrationException('Invalid migration file: ' . $fullPath);
-            }
-
-            $builder = new TableBuilder($this->driver);
-            $migration->down($builder);
-
-            try {
-                $this->pdo->beginTransaction();
-
-                foreach ($builder->getStatements() as $statement) {
-                    $this->pdo->exec($statement);
-                }
-
-                $this->markAsRolledBack($file);
-                $this->pdo->commit();
-
-                $rolledBack[] = $file;
-            } catch (\Throwable $e) {
-                if ($this->pdo->inTransaction()) {
-                    $this->pdo->rollBack();
-                }
                 throw new MigrationException(sprintf('Rollback of [%s] failed: %s', $file, $e->getMessage()), 0, $e);
             }
         }
