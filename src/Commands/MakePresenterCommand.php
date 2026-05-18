@@ -18,6 +18,11 @@ class MakePresenterCommand extends Command
     protected static $defaultName = 'make:presenter';
     protected static $defaultDescription = 'Create a new presenter class';
 
+    public function __construct()
+    {
+        parent::__construct('make:presenter');
+    }
+
     protected function configure(): void
     {
         $this->addArgument('name', InputArgument::REQUIRED, 'The name of the presenter');

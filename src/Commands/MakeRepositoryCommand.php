@@ -18,6 +18,11 @@ class MakeRepositoryCommand extends Command
     protected static $defaultName = 'make:repository';
     protected static $defaultDescription = 'Create a new repository class';
 
+    public function __construct()
+    {
+        parent::__construct('make:repository');
+    }
+
     protected function configure(): void
     {
         $this->addArgument('name', InputArgument::REQUIRED, 'The name of the repository');

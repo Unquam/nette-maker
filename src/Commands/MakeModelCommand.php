@@ -18,6 +18,11 @@ class MakeModelCommand extends Command
     protected static $defaultName = 'make:model';
     protected static $defaultDescription = 'Create a new model class';
 
+    public function __construct()
+    {
+        parent::__construct('make:model');
+    }
+
     protected function configure(): void
     {
         $this->addArgument('name', InputArgument::REQUIRED, 'The name of the model');

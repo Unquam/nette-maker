@@ -18,6 +18,11 @@ class MakeLatteCommand extends Command
     protected static $defaultName = 'make:latte';
     protected static $defaultDescription = 'Create a new Latte template';
 
+    public function __construct()
+    {
+        parent::__construct('make:latte');
+    }
+
     protected function configure(): void
     {
         $this->addArgument('name', InputArgument::REQUIRED, 'The name of the template');

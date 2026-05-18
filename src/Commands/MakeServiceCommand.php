@@ -18,6 +18,11 @@ class MakeServiceCommand extends Command
     protected static $defaultName = 'make:service';
     protected static $defaultDescription = 'Create a new service class';
 
+    public function __construct()
+    {
+        parent::__construct('make:service');
+    }
+
     protected function configure(): void
     {
         $this->addArgument('name', InputArgument::REQUIRED, 'The name of the service');
