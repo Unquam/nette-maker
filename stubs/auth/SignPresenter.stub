@@ -85,27 +85,37 @@ final class SignPresenter extends Presenter
 
     public function signUpFormSucceeded(Form $form, \stdClass $data): void
     {
-        $exists = $this->explorer->table('users')
-            ->where('email', $data->email)
-            ->fetch();
+       $email = trim((string) $data->email);
+            $password = (string) $data->password;
 
-        if ($exists) {
-            $form->addError('This email is already registered.');
-            return;
-        }
+            $exists = $this->explorer->table('users')
+                ->where('email', $email)
+                ->fetch();
+
+            if ($exists) {
+                $form->addError('This email is already registered.');
+                return;
+            }
 
         try {
-            $hashedPassword = $this->passwords->hash($data->password);
+            $hashedPassword = $this->passwords->hash($password);
+            $now = date('Y-m-d H:i:s');
 
-            $this->explorer->table('users')->insert([
-                'email' => $data->email,
-                'password' => $hashedPassword,
-                'role' => 'user',
-            ]);
+            $this->explorer->query(
+                'INSERT INTO users (email, password, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
+                $email,
+                $hashedPassword,
+                'user',
+                $now,
+                $now
+            );
 
-            $this->getUser()->login($data->email, $data->password);
+            $this->getUser()->login($email, $password);
+
             $this->flashMessage('Registration successful!', 'success');
             $this->redirect('Home:default');
+        } catch (\Nette\Application\AbortException $e) {
+            throw $e;
         } catch (\Throwable $e) {
             $form->addError('An error occurred during registration. Please try again.');
         }
