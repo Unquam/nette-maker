@@ -426,6 +426,37 @@ db/
 └── migrations/
     └── 2026_05_18_120000_create_articles_table.php  # make:migration
 ```
+
+---
+
+### Database Seeding
+
+Seed the database with records sequentially or run a specific seeder class.
+
+Create a new seeder skeleton stub:
+```bash
+php nette make:seeder UserSeeder
+```
+
+Run all available seeders alphabetically:
+```bash
+php nette db:seed
+```
+
+Run a specific seeder class directly using the `--class` (or `-c`) option boundary:
+```bash
+php nette db:seed --class=UserSeeder
+# or shortcut notation format
+php nette db:seed -c UserSeeder
+```
+
+Configure the custom seeders collection lookup storage folder path inside your `nette-maker.neon`:
+
+```neon
+seeders:
+    directory: db/seeders
+```
+
 ---
 
 ### `clear:cache`

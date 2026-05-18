@@ -18,7 +18,7 @@ use Unquam\NetteMaker\Migration\MigrateCommand;
 
 class Application extends ConsoleApplication
 {
-    private const VERSION = '1.2.0';
+    private const VERSION = '1.3.0';
     private const NAME = 'Nette Maker';
 
     public function __construct(string $configFile)
@@ -55,6 +55,10 @@ class Application extends ConsoleApplication
             new MakeLatteCommand(),
             new MakeRepositoryCommand(),
             new MakeServiceCommand(),
+
+            // Inside registerCommands() method array:
+            new Commands\MakeSeederCommand($configFile),
+            new Commands\SeedCommand($configFile),
         ]);
     }
 }

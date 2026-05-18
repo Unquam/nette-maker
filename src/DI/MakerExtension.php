@@ -13,7 +13,9 @@ use Unquam\NetteMaker\Commands\MakeModelCommand;
 use Unquam\NetteMaker\Commands\MakeModuleCommand;
 use Unquam\NetteMaker\Commands\MakePresenterCommand;
 use Unquam\NetteMaker\Commands\MakeRepositoryCommand;
+use Unquam\NetteMaker\Commands\MakeSeederCommand;
 use Unquam\NetteMaker\Commands\MakeServiceCommand;
+use Unquam\NetteMaker\Commands\SeedCommand;
 use Unquam\NetteMaker\Migration\MigrateCommand;
 
 class MakerExtension extends CompilerExtension
@@ -68,6 +70,14 @@ class MakerExtension extends CompilerExtension
 
         $builder->addDefinition($this->prefix('clearCache'))
             ->setFactory(ClearCacheCommand::class, [$configFile])
+            ->setTags($tags);
+
+        $builder->addDefinition($this->prefix('makeSeeder'))
+            ->setFactory(MakeSeederCommand::class, [$configFile])
+            ->setTags($tags);
+
+        $builder->addDefinition($this->prefix('dbSeed'))
+            ->setFactory(SeedCommand::class, [$configFile])
             ->setTags($tags);
     }
 }

@@ -103,6 +103,8 @@ class Plugin implements PluginInterface, EventSubscriberInterface
             "    password: ''\n\n" .
             "migrations:\n" .
             "    directory: db/migrations\n\n" .
+            "seeders:\n" .
+            "    directory: db/seeders\n\n" .
             "cache:\n" .
             "    directories:\n" .
             "        - temp\n";

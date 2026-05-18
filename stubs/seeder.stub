@@ -1,0 +1,16 @@
+<?php
+
+declare(strict_types=1);
+
+return new class
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(\PDO $pdo): void
+    {
+        // Example:
+        // $stmt = $pdo->prepare("INSERT INTO users (email, name, active) VALUES (?, ?, ?)");
+        // $stmt->execute(['admin@example.com', 'Admin', 1]);
+    }
+};

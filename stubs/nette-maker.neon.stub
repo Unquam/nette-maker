@@ -7,6 +7,9 @@ database:
 migrations:
     directory: db/migrations
 
+seeders:
+    directory: db/seeders
+
 cache:
     # List of directories to be cleared during clear:cache execution
     directories:
