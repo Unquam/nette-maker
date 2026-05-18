@@ -1,0 +1,20 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+$vendorAutoload = dirname(__DIR__, 3) . '/autoload.php';
+
+if (!file_exists($vendorAutoload)) {
+    $vendorAutoload = dirname(__DIR__) . '/vendor/autoload.php';
+}
+
+require $vendorAutoload;
+
+use Unquam\NetteMaker\Application;
+
+$projectRoot = dirname($vendorAutoload, 2);
+$configFile = $projectRoot . '/nette-maker.neon';
+
+$app = new Application($configFile);
+exit($app->run());

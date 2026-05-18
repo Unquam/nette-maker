@@ -1,0 +1,22 @@
+<?php
+
+declare(strict_types=1);
+
+use Unquam\NetteMaker\Migration\TableBuilder;
+
+return new class
+{
+    public function up(TableBuilder $builder): void
+    {
+        $builder->create('{{table}}', function (TableBuilder $table): void {
+            $table->id();
+            // Add your columns here: $table->string('email')->unique();
+            $table->timestamps();
+        });
+    }
+
+    public function down(TableBuilder $builder): void
+    {
+        $builder->drop('{{table}}');
+    }
+};

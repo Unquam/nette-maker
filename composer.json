@@ -1,0 +1,49 @@
+{
+  "name": "unquam/nette-maker",
+  "description": "CLI code generator for Nette Framework: create presenters, models, migrations, and more.",
+  "keywords": [
+    "nette",
+    "cli",
+    "generator",
+    "maker",
+    "migration",
+    "presenter",
+    "repository",
+    "service"
+  ],
+  "license": "MIT",
+  "type": "library",
+  "require": {
+    "php": ">=7.4",
+    "symfony/console": "^5.0||^6.0||^7.0",
+    "nette/php-generator": "^3.5||^4.0",
+    "nette/neon": "^3.3||^4.0",
+    "doctrine/inflector": "^2.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.6"
+  },
+  "suggest": {
+    "nette/di": "Required if you want to integrate via MakerExtension in config.neon"
+  },
+  "autoload": {
+    "psr-4": {
+      "Unquam\\NetteMaker\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Unquam\\NetteMaker\\Tests\\": "tests/"
+    }
+  },
+  "bin": [
+    "bin/nette-maker"
+  ],
+  "scripts": {
+    "test": "vendor/bin/phpunit",
+    "post-autoload-dump": [
+      "Unquam\\NetteMaker\\Composer\\ScriptHandler::install"
+    ]
+  },
+  "minimum-stability": "stable"
+}

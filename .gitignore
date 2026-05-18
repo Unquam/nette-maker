@@ -1,0 +1,6 @@
+/vendor/
+/temp_tests/
+.phpunit.result.cache
+composer.lock
+nette
+nette-maker.neon
