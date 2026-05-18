@@ -571,6 +571,37 @@ return new class
 
 ---
 
+### Authentication Scaffolding (`make:auth`)
+
+Scaffold a fully operational authentication, registration, and logout system out-of-the-box. It automatically generates a secure database schema migration table script, custom security Authenticator model services compliant with Nette Security standards, controller presenter forms logic handlers, and responsive front-end view templates layouts:
+
+```bash
+php nette make:auth
+```
+
+#### What gets generated:
+- `db/migrations/%timestamp%_create_users_table.php` — Secure table structure handling password storage hashing hashes.
+- `app/Model/Security/Authenticator.php` — DB credentials comparison core evaluating identities rules.
+- `app/Presentation/Sign/SignPresenter.php` — Controller factories mapping login (`signInForm`), registration (`signUpForm`), and clean session logouts (`actionOut`).
+- `app/Presentation/Sign/in.latte` & `up.latte` — Styled UI templates interfaces ready to serve layout pages.
+
+#### Activation setup rules:
+Once generated, simply wire up the fresh class service structure boundary mapping inside your core Nette application DI container tracking block configuration setup (`config.neon` layout configuration file):
+
+```neon
+services:
+    - App\Model\Security\Authenticator
+```
+
+Afterward, instantly run your migrations schema setup to provision your backend database tracking table structures allocation layouts:
+
+```bash
+php nette migrate
+```
+
+---
+
+
 ### `clear:cache`
 
 Safely clears application cache and maintenance directories.

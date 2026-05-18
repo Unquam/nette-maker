@@ -1,0 +1,30 @@
+<?php
+
+declare(strict_types=1);
+
+use Unquam\NetteMaker\Migration\TableBuilder;
+
+return new class
+{
+    /**
+     * Run the auth users table migration.
+     */
+    public function up(TableBuilder $builder): void
+    {
+        $builder->create('users', function (TableBuilder $table): void {
+            $table->id();
+            $table->string('email')->unique();
+            $table->string('password');
+            $table->string('role')->default('user');
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the auth users table migration.
+     */
+    public function down(TableBuilder $builder): void
+    {
+        $builder->dropIfExists('users');
+    }
+};

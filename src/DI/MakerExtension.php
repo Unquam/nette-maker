@@ -7,6 +7,7 @@ namespace Unquam\NetteMaker\DI;
 use Nette\DI\CompilerExtension;
 use Unquam\NetteMaker\Commands\ClearCacheCommand;
 use Unquam\NetteMaker\Commands\FreshCommand;
+use Unquam\NetteMaker\Commands\MakeAuthCommand;
 use Unquam\NetteMaker\Commands\MakeFactoryCommand;
 use Unquam\NetteMaker\Commands\MakeInitCommand;
 use Unquam\NetteMaker\Commands\MakeLatteCommand;
@@ -93,6 +94,10 @@ class MakerExtension extends CompilerExtension
 
         $builder->addDefinition($this->prefix('clearCache'))
             ->setFactory(ClearCacheCommand::class, [$configFile])
+            ->setTags($tags);
+
+        $builder->addDefinition($this->prefix('makeAuth'))
+            ->setFactory(MakeAuthCommand::class, [$configFile])
             ->setTags($tags);
     }
 }

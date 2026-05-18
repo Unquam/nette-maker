@@ -1,0 +1,45 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Model\Security;
+
+use Nette\Database\Explorer;
+use Nette\Security\AuthenticationException;
+use Nette\Security\Authenticator as NetteAuthenticator;
+use Nette\Security\Passwords;
+use Nette\Security\SimpleIdentity;
+
+class Authenticator implements NetteAuthenticator
+{
+    /** @var Explorer */
+    private $explorer;
+
+    /** @var Passwords */
+    private $passwords;
+
+    public function __construct(Explorer $explorer, Passwords $passwords)
+    {
+        $this->explorer = $explorer;
+        $this->passwords = $passwords;
+    }
+
+    public function authenticate(string $email, string $password): SimpleIdentity
+    {
+        $row = $this->explorer->table('users')
+            ->where('email', $email)
+            ->fetch();
+
+        if (!$row) {
+            throw new AuthenticationException('User not found.', self::IdentityNotFound);
+        }
+
+        if (!$this->passwords->verify($password, $row->password)) {
+            throw new AuthenticationException('Invalid password.', self::InvalidCredential);
+        }
+
+        return new SimpleIdentity((int) $row->id, [$row->role], [
+            'email' => $row->email,
+        ]);
+    }
+}

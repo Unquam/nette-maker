@@ -1,0 +1,25 @@
+{block content}
+<div id="auth-wrapper" style="max-width: 400px; margin: 50px auto; font-family: sans-serif;">
+    <h1>Sign In</h1>
+
+    <div n:foreach="$flashes as $flash" class="flash {$flash->type}" style="color: green; margin-bottom: 15px;">
+        {$flash->message}
+    </div>
+
+    {form signInForm}
+        <div style="margin-bottom: 15px;">
+            {label email style => 'display:block; margin-bottom:5px;'} / {input email style => 'width:100%; padding:8px; box-sizing:border-box;'}
+        </div>
+        <div style="margin-bottom: 15px;">
+            {label password style => 'display:block; margin-bottom:5px;'} / {input password style => 'width:100%; padding:8px; box-sizing:border-box;'}
+        </div>
+        <div style="margin-bottom: 15px; color: red;" n:if="$form->hasErrors()">
+            <p n:foreach="$form->errors as $error">{$error}</p>
+        </div>
+        <div>
+            {input send style => 'padding: 10px 20px; background: #007bff; color: #fff; border: none; cursor: pointer;'}
+        </div>
+    {/form}
+
+    <p style="margin-top: 20px;">Don't have an account? <a n:href="Sign:up">Register here</a></p>
+</div>

@@ -1,0 +1,113 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Presentation\Sign;
+
+use Nette\Application\UI\Form;
+use Nette\Application\UI\Presenter;
+use Nette\Database\Explorer;
+use Nette\Security\AuthenticationException;
+use Nette\Security\Passwords;
+
+final class SignPresenter extends Presenter
+{
+    /** @var Explorer */
+    private $explorer;
+
+    /** @var Passwords */
+    private $passwords;
+
+    public function __construct(Explorer $explorer, Passwords $passwords)
+    {
+        parent::__construct();
+        $this->explorer = $explorer;
+        $this->passwords = $passwords;
+    }
+
+    /**
+     * Action to log out the authenticated user session.
+     */
+    public function actionOut(): void
+    {
+        $this->getUser()->logout();
+        $this->flashMessage('You have been logged out.', 'success');
+        $this->redirect('Home:default');
+    }
+
+    /**
+     * Factory strategy building the Sign In components form configuration layout.
+     */
+    protected function createComponentSignInForm(): Form
+    {
+        $form = new Form();
+        $form->addEmail('email', 'Email:')
+            ->setRequired('Please enter your email.');
+
+        $form->addPassword('password', 'Password:')
+            ->setRequired('Please enter your password.');
+
+        $form->addSubmit('send', 'Sign In');
+
+        $form->onSuccess[] = [$this, 'signInFormSucceeded'];
+        return $form;
+    }
+
+    public function signInFormSucceeded(Form $form, \stdClass $data): void
+    {
+        try {
+            $this->getUser()->login($data->email, $data->password);
+            $this->flashMessage('Welcome back!', 'success');
+            $this->redirect('Home:default');
+        } catch (AuthenticationException $e) {
+            $form->addError($e->getMessage());
+        }
+    }
+
+    /**
+     * Factory strategy building the Sign Up components form configuration layout.
+     */
+    protected function createComponentSignUpForm(): Form
+    {
+        $form = new Form();
+        $form->addEmail('email', 'Email:')
+            ->setRequired('Please enter a valid email.');
+
+        $form->addPassword('password', 'Password:')
+            ->setRequired('Please create a password.')
+            ->addRule(Form::MIN_LENGTH, 'Your password must be at least %d characters long.', 6);
+
+        $form->addSubmit('send', 'Register');
+
+        $form->onSuccess[] = [$this, 'signUpFormSucceeded'];
+        return $form;
+    }
+
+    public function signUpFormSucceeded(Form $form, \stdClass $data): void
+    {
+        $exists = $this->explorer->table('users')
+            ->where('email', $data->email)
+            ->fetch();
+
+        if ($exists) {
+            $form->addError('This email is already registered.');
+            return;
+        }
+
+        try {
+            $hashedPassword = $this->passwords->hash($data->password);
+
+            $this->explorer->table('users')->insert([
+                'email' => $data->email,
+                'password' => $hashedPassword,
+                'role' => 'user',
+            ]);
+
+            $this->getUser()->login($data->email, $data->password);
+            $this->flashMessage('Registration successful!', 'success');
+            $this->redirect('Home:default');
+        } catch (\Throwable $e) {
+            $form->addError('An error occurred during registration. Please try again.');
+        }
+    }
+}
