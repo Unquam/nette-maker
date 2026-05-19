@@ -382,7 +382,7 @@ php nette migrate --rollback
 
 ---
 
-## Integration with Nette DI (MakerExtension)
+## `Integration with Nette DI (MakerExtension)`
 
 If your project uses `nette/di`, you can register all commands as services and wire them into your Symfony Console application via the DI extension.
 
@@ -429,7 +429,7 @@ db/
 
 ---
 
-### Interactive Prompts
+### `Interactive Prompts`
 
 All code generation commands now support a smart interactive mode. If you forget to provide the name argument, the CLI will seamlessly prompt you for input in real-time:
 
@@ -464,7 +464,7 @@ php nette migrate:fresh -s
 
 ---
 
-### Database Seeding
+### `Database Seeding`
 
 Seed the database with records sequentially or run a specific seeder class.
 
@@ -494,7 +494,7 @@ seeders:
 
 ---
 
-### Data Factories
+### `Data Factories`
 
 Generate powerful blueprint schemas for your database records to simplify seeding and testing.
 
@@ -529,7 +529,7 @@ class UserFactory extends AbstractFactory
 
     protected function definition(): array
     {
-        // \$faker = \Faker\Factory::create();
+        // $faker = \Faker\Factory::create();
 
         return [
             'name' => 'John Doe',
@@ -551,18 +551,18 @@ declare(strict_types=1);
 
 return new class
 {
-    public function run(\PDO \$pdo): void
+    public function run(\PDO $pdo): void
     {
         // Require the generated factory class layout
         require_once dirname(__DIR__) . '/factories/UserFactory.php';
 
-        \(factory = new UserFactory(\)pdo);
+        $factory = new UserFactory($pdo);
 
         // Fluent interface: instantly seed exactly 50 default users!
-        \$factory->count(50)->create();
+        $factory->count(50)->create();
 
         // Or create separate entries while seamlessly overriding default values
-        \$factory->count(2)->create([
+        $factory->count(2)->create([
             'role' => 'admin',
         ]);
     }
@@ -571,7 +571,7 @@ return new class
 
 ---
 
-### Authentication Scaffolding (`make:auth`)
+### `Authentication Scaffolding` (`make:auth`)
 
 Scaffold a fully operational authentication, registration, and logout system out-of-the-box. It automatically generates a secure database schema migration table script, custom security Authenticator model services compliant with Nette Security standards, controller presenter forms logic handlers, and responsive front-end view templates layouts:
 
@@ -601,7 +601,7 @@ php nette migrate
 
 ---
 
-### API Resources & Collections
+### `API Resources & Collections`
 
 Transform your database models into secure, structured JSON layers with native support for Nette Framework pagination.
 
@@ -634,8 +634,8 @@ class UserResource extends JsonResource
     public function toArray(): array
     {
         return [
-            'id' => (int) \$this->resource->id,
-            'email' => (string) \$this->resource->email,
+            'id' => (int) $this->resource->id,
+            'email' => (string) $this->resource->email,
         ];
     }
 }
@@ -666,8 +666,8 @@ class UserCollection extends ResourceCollection
 
 ##### Case A: Single Item Response
 ```php
-\(user =\)this->explorer->table('users')->get(1);
-\(this->sendJson(UserResource::make(\)user));
+$user = $this->explorer->table('users')->get(1);
+$this->sendJson(UserResource::make($user));
 ```
 
 ##### Case B: Paginated Collection Response
@@ -675,10 +675,10 @@ Natively maps Nette Database query streams (`Selection`) combined with paginatio
 
 ```php
 // Select records for page 2, limiting to 15 entries per page
-\(users =\)this->explorer->table('users')->page(2, 15);
+$users = $this->explorer->table('users')->page(2, 15);
 
 // Automatically injects structured data and pagination meta hashes
-\(this->sendJson(UserCollection::make(\)users));
+$this->sendJson(UserCollection::make($users));
 ```
 
 **JSON Output Format:**
