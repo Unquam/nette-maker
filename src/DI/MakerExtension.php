@@ -16,6 +16,7 @@ use Unquam\NetteMaker\Commands\MakeModelCommand;
 use Unquam\NetteMaker\Commands\MakeModuleCommand;
 use Unquam\NetteMaker\Commands\MakePresenterCommand;
 use Unquam\NetteMaker\Commands\MakeRepositoryCommand;
+use Unquam\NetteMaker\Commands\MakeRequestCommand;
 use Unquam\NetteMaker\Commands\MakeResourceCommand;
 use Unquam\NetteMaker\Commands\MakeSeederCommand;
 use Unquam\NetteMaker\Commands\MakeServiceCommand;
@@ -103,6 +104,10 @@ class MakerExtension extends CompilerExtension
 
         $builder->addDefinition($this->prefix('makeResource'))
             ->setFactory(MakeResourceCommand::class, [$configFile])
+            ->setTags($tags);
+
+        $builder->addDefinition($this->prefix('makeRequest'))
+            ->setFactory(MakeRequestCommand::class, [$configFile])
             ->setTags($tags);
     }
 }

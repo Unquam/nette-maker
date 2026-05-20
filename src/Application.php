@@ -24,7 +24,7 @@ use Unquam\NetteMaker\Migration\MigrateCommand;
 class Application extends ConsoleApplication
 {
     /** @var string */
-    private const VERSION = '2.1.0';
+    private const VERSION = '2.2.0';
 
     /** @var string */
     private const NAME = 'Nette Maker';
@@ -75,6 +75,8 @@ class Application extends ConsoleApplication
             new Commands\MakeAuthCommand($configFile),
 
             new Commands\MakeResourceCommand($configFile),
+
+            new Commands\MakeRequestCommand($configFile),
         ]);
     }
 }
