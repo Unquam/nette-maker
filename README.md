@@ -194,7 +194,7 @@ php nette make:repository Article
 # → app/Model/Repositories/ArticleRepository.php
 ```
 
-Generated class includes `findAll(): Selection` and `findById(int $id): mixed` methods pre-wired to the correct database table via a private `TABLE` constant.
+Generated class includes `findAll(): Selection`, `findById(int $id)`, `create(array $data)`, `update(int $id, array $data): bool` and `delete(int $id): bool` methods pre-wired to the correct database table via a private `TABLE` constant.
 
 ---
 

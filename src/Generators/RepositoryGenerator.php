@@ -77,13 +77,56 @@ class RepositoryGenerator
 
         // 4. Method findById
         $findById = $class->addMethod('findById')
-            ->setPublic()
-            ->setReturnType('mixed');  // No return type - mixed is PHP 8.0+ only
+            ->setPublic(); // Removed return type to ensure pure PHP 7.4 syntax compatibility
 
         $findById->addParameter('id')
             ->setType('int');
 
         $findById->setBody('return $this->explorer->table(self::TABLE)->get($id);');
+
+        // 5. Method create
+        $create = $class->addMethod('create')
+            ->setPublic(); // Returns ActiveRow instance, omitted for PHP 7.4 strict layers
+
+        $create->addParameter('data')
+            ->setType('array');
+
+        $create->setBody('return $this->findAll()->insert($data);');
+
+        // 6. Method update
+        $update = $class->addMethod('update')
+            ->setPublic()
+            ->setReturnType('bool');
+
+        $update->addParameter('id')
+            ->setType('int');
+
+        $update->addParameter('data')
+            ->setType('array');
+
+        $update->setBody(
+            '$row = $this->findById($id);' . "\n" .
+            'if (!$row) {' . "\n" .
+            '    return false;' . "\n" .
+            '}' . "\n" .
+            'return (bool) $row->update($data);'
+        );
+
+        // 7. Method delete
+        $delete = $class->addMethod('delete')
+            ->setPublic()
+            ->setReturnType('bool');
+
+        $delete->addParameter('id')
+            ->setType('int');
+
+        $delete->setBody(
+            '$row = $this->findById($id);' . "\n" .
+            'if (!$row) {' . "\n" .
+            '    return false;' . "\n" .
+            '}' . "\n" .
+            'return (bool) $row->delete();'
+        );
 
         return (string) $file;
     }
