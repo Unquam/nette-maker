@@ -24,7 +24,7 @@ use Unquam\NetteMaker\Migration\MigrateCommand;
 class Application extends ConsoleApplication
 {
     /** @var string */
-    private const VERSION = '2.2.2';
+    private const VERSION = '2.2.3';
 
     /** @var string */
     private const NAME = 'Nette Maker';
