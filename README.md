@@ -348,6 +348,41 @@ public function actionSave(): void
 }
 ```
 
+#### 3. Database Validation (`unique` / `exists`)
+
+Pass the `Explorer` instance as second constructor argument to enable database-backed rules:
+
+```php
+public function rules(): array
+{
+    return [
+        'email'   => 'required|email|unique:users,email',
+        'role_id' => 'required|integer|exists:roles,id',
+    ];
+}
+```
+
+Usage in Presenter:
+
+```php
+public function actionCreate(): void
+{
+    try {
+        $request = new StoreUserRequest($this->getHttpRequest(), $this->explorer);
+        $validated = $request->validate();
+
+        $this->model->create($validated);
+        $this->sendJson(['status' => 'success']);
+
+    } catch (\Unquam\NetteMaker\Exceptions\ValidationException $e) {
+        $this->getHttpResponse()->setCode($e->getCode());
+        $this->sendJson(['errors' => $e->getErrors()]);
+    }
+}
+```
+
+> If `Explorer` is not passed, `unique` and `exists` rules are silently skipped.
+
 ---
 
 ### `make:module`

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unquam\NetteMaker\Requests;
 
 use Nette\Http\IRequest;
+use Nette\Database\Explorer;
 use Unquam\NetteMaker\Exceptions\ValidationException;
 
 abstract class FormRequest
@@ -12,18 +13,21 @@ abstract class FormRequest
     /** @var IRequest */
     protected $httpRequest;
 
+    /** @var Explorer|null */
+    protected $explorer;
+
     /** @var array<string, mixed> */
     protected $requestData = [];
 
-    public function __construct(IRequest $httpRequest)
+    public function __construct(IRequest $httpRequest, ?Explorer $explorer = null)
     {
         $this->httpRequest = $httpRequest;
+        $this->explorer = $explorer;
         $this->requestData = $this->resolveRequestInput();
     }
 
     /**
      * Determine if the user is authorized to make this request.
-     * Defaults to true so developers don't have to write it every time.
      */
     public function authorize(): bool
     {
@@ -32,15 +36,11 @@ abstract class FormRequest
 
     /**
      * Get the validation rules that apply to the request.
-     *
-     * @return array<string, string|array<string>>
      */
     abstract public function rules(): array;
 
     /**
      * Get custom messages for validator errors override mapping layer.
-     *
-     * @return array<string, string>
      */
     public function messages(): array
     {
@@ -49,9 +49,6 @@ abstract class FormRequest
 
     /**
      * Safely run validations routines manually inside Presenter scopes.
-     *
-     * @return array<string, mixed> Filtered validated inputs array layout
-     * @throws ValidationException
      */
     public function validate(): array
     {
@@ -59,8 +56,8 @@ abstract class FormRequest
             throw new ValidationException('This action is unauthorized.', 403);
         }
 
-        $validator = new RuleValidator();
-
+        // Pass Explorer database service instance into the validator engine
+        $validator = new RuleValidator($this->explorer);
         $failedErrors = $validator->validate($this->requestData, $this->rules(), $this->messages());
 
         if (!empty($failedErrors)) {
@@ -79,11 +76,6 @@ abstract class FormRequest
         return $validated;
     }
 
-    /**
-     * Consolidated input capture extracting standard POST, file uploads, or raw JSON streams.
-     *
-     * @return array<string, mixed>
-     */
     private function resolveRequestInput(): array
     {
         $post = $this->httpRequest->getPost();
@@ -106,16 +98,11 @@ abstract class FormRequest
         return (array) $post;
     }
 
-    /**
-     * Recursively process Nette nested files tree array formatting fields for Validator constraints.
-     */
     private function resolveFiles(array $files): array
     {
         $result = [];
-
         foreach ($files as $key => $fileObj) {
             if ($fileObj instanceof \Nette\Http\FileUpload) {
-                // Ignore empty file upload slots to prevent throwing false required/size faults
                 if ($fileObj->getError() === UPLOAD_ERR_NO_FILE) {
                     continue;
                 }
@@ -126,11 +113,9 @@ abstract class FormRequest
                     'tmp'  => $fileObj->getTemporaryFile()
                 ];
             } elseif (is_array($fileObj)) {
-                // Seamlessly handle multi-file arrays fields navigation wrapper loop mapping
                 $result[$key] = $this->resolveFiles($fileObj);
             }
         }
-
         return $result;
     }
 }

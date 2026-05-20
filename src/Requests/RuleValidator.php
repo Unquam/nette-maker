@@ -9,6 +9,14 @@ class RuleValidator
     /** @var array<string, string> */
     private $errors = [];
 
+    /** @var \Nette\Database\Explorer|null */
+    private $explorer;
+
+    public function __construct(?\Nette\Database\Explorer $explorer = null)
+    {
+        $this->explorer = $explorer;
+    }
+
     /**
      * Validate the given data against the rules matrix.
      *
@@ -168,8 +176,47 @@ class RuleValidator
     private function validateSize($value, ?string $param): bool { if ($param === null || !is_array($value) || !isset($value['size'])) return false; return $value['size'] <= ((int)$param * 1024); }
 
     // Database placeholders
-    private function validateUnique(): bool { return true; }
-    private function validateExists(): bool { return true; }
+    /**
+     * Validate that an attribute is unique among a given database table.
+     * Rule syntax: unique:table_name,column_name
+     */
+    private function validateUnique($value, ?string $param): bool
+    {
+        if ($this->explorer === null || $param === null || $param === '') {
+            return true; // Skip if database context is not provided
+        }
+
+        $parts = explode(',', $param);
+        $table = $parts[0];
+        $column = $parts[1] ?? 'id'; // Fallback to id if column is omitted
+
+        $count = $this->explorer->table($table)
+            ->where($column, $value)
+            ->count('*');
+
+        return $count === 0;
+    }
+
+    /**
+     * Validate that an attribute exists within a given database table.
+     * Rule syntax: exists:table_name,column_name
+     */
+    private function validateExists($value, ?string $param): bool
+    {
+        if ($this->explorer === null || $param === null || $param === '') {
+            return true; // Skip if database context is not provided
+        }
+
+        $parts = explode(',', $param);
+        $table = $parts[0];
+        $column = $parts[1] ?? 'id'; // Fallback to id if column is omitted
+
+        $count = $this->explorer->table($table)
+            ->where($column, $value)
+            ->count('*');
+
+        return $count > 0;
+    }
 
     private function getErrorMessage(string $field, string $rule, ?string $param, array $data, array $customMessages): string
     {
