@@ -304,11 +304,14 @@ public function messages(): array
 public function actionCreate(): void
 {
     try {
-        \$request = new \App\Presentation\Api\Requests\Article\StoreRequest(\(this->getHttpRequest());\)validatedData = \(request->validate(); // Safe, explicit verification loop\)this->model->create(\(validatedData);\)this->sendJson(['status' => 'success']);
+        $request = new \App\Presentation\Api\Requests\Article\StoreRequest($this->getHttpRequest()); 
+        $validatedData = $request->validate(); // Safe, explicit verification loop\)this->model->create(\(validatedData);\)this->sendJson(['status' => 'success']);
         
-    } catch (\Unquam\NetteMaker\Exceptions\ValidationException \(e) {\)this->getHttpResponse()->setCode(\(e->getCode());\)this->sendJson([
+    } catch (\Unquam\NetteMaker\Exceptions\ValidationException $e) { 
+        $this->getHttpResponse()->setCode($e->getCode());
+        $this->sendJson([
             'message' => 'The given data was invalid.',
-            'errors'  => \$e->getErrors()
+            'errors'  => $e->getErrors()
         ]);
     }
 }
@@ -329,15 +332,18 @@ public function actionCreate(): void
 public function actionSave(): void
 {
     try {
-        \$request = new \App\Presentation\Requests\User\UpdateRequest(\(this->getHttpRequest());\)validatedData = \(request->validate();\)this->model->save(\(validatedData);\)this->flashMessage('Profil byl úspěšně aktualizován!', 'success');
-        \$this->redirect('User:default');
+        $request = new \App\Presentation\Requests\User\UpdateRequest($this->getHttpRequest());
+        $validatedData = $request->validate();
+        $this->model->save($validatedData);
+        $this->flashMessage('Profil byl úspěšně aktualizován!', 'success');
+        $this->redirect('User:default');
         
-    } catch (\Unquam\NetteMaker\Exceptions\ValidationException \$e) {
+    } catch (\Unquam\NetteMaker\Exceptions\ValidationException $e) {
         // Handle failed states via standard Nette flash messages and redirect back
-        foreach (\(e->getErrors() as\)errorText) {
-            \(this->flashMessage(\)errorText, 'danger');
+        foreach ($e->getErrors() as $errorText) {
+            $this->flashMessage($errorText, 'danger');
         }
-        \$this->redirect('this');
+        $this->redirect('this');
     }
 }
 ```
