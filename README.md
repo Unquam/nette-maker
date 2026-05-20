@@ -237,7 +237,18 @@ php nette make:request User/Update --web
 ```
 
 #### 1. Configuration Example (`StoreRequest.php`)
-Define your validation rules using core constraints (`required`, `nullable`, `sometimes`, `string`, `integer`, `numeric`, `boolean`, `array`, `email`, `url`, `min:n`, `max:n`, `min_length:n`, `max_length:n`, `in:a,b`, `confirmed`, `date`, `date_format:Y-m-d`, `before:date`, `after:date`, `alpha`, `alpha_num`, `alpha_dash`, `digits:n`, `size:kb`, `mimetypes:types`).
+Define your validation rules using core constraints (`required`, `nullable`, `sometimes`, `string`, `integer`, `numeric`, `boolean`, `array`, `email`, `email:rfc`, `email:dns`, `email:rfc,dns`, `url`, `min:n`, `max:n`, `min_length:n`, `max_length:n`, `in:a,b`, `not_in:a,b`, `regex:/pattern/`, `confirmed`, `date`, `date_format:Y-m-d`, `before:date`, `after:date`, `alpha`, `alpha_num`, `alpha_dash`, `digits:n`, `digits_between:a,b`, `between:a,b`, `ip`, `ipv4`, `ipv6`, `uuid`, `json`, `accepted`, `declined`, `filled`, `present`, `prohibited`, `size:kb`, `mimetypes:types`).
+
+> **Note:** Use `email:dns` option with caution in high-traffic production environments, as DNS lookups introduce synchronous network latency.
+
+Rules can be defined as a pipe-separated string or as an array:
+```php
+// String format
+'email' => 'required|email:rfc,dns|max_length:255',
+
+// Array format
+'email' => ['required', 'email:rfc,dns', 'max_length:255'],
+```
 
 ```php
 <?php
@@ -253,8 +264,9 @@ class StoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => 'required|string|min_length:5',
+            'title'   => 'required|string|min_length:5',
             'content' => 'required|string',
+            'email'   => ['required', 'email:rfc,dns', 'max_length:255'],
         ];
     }
 
@@ -269,6 +281,7 @@ class StoreRequest extends FormRequest
 ```
 
 #### 2. Multilingual Support (Czech / Multi-lang)
+...
 The `RuleValidator` uses dynamic placeholder tokens (`:field`, `:min`, `:max`, `:values`). You can easily return error messages in Czech (or any other language) by overriding them directly in the `messages()` method of your request class, or by passing translated strings through your architecture.
 
 ##### Example Czech Output Mapping:

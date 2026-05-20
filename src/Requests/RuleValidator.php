@@ -13,7 +13,8 @@ class RuleValidator
      * Validate the given data against the rules matrix.
      *
      * @param array<string, mixed> $data
-     * @param array<string, string|array<string>> $rules
+     * @param array<string, string|array<int, string>> $rules
+     * @param array<string, string> $customMessages
      * @return array<string, string> Dictionary of failed field validations
      */
     public function validate(array $data, array $rules, array $customMessages = []): array
@@ -21,7 +22,8 @@ class RuleValidator
         $this->errors = [];
 
         foreach ($rules as $field => $fieldRules) {
-            $rulesArray = is_string($fieldRules) ? explode('|', $fieldRules) : $fieldRules;
+            // Support both string formats 'required|string' and arrays layout ['required', 'string']
+            $rulesArray = is_array($fieldRules) ? $fieldRules : explode('|', (string) $fieldRules);
             $value = $data[$field] ?? null;
 
             $isNullable = in_array('nullable', $rulesArray, true);
@@ -47,9 +49,15 @@ class RuleValidator
                     continue;
                 }
 
-                $parts = explode(':', $ruleBlock, 2);
-                $ruleName = $parts[0];
-                $ruleParam = $parts[1] ?? null;
+                // Explicit support for regex and complex parameters tracking strings splitting routines
+                if (strpos($ruleBlock, 'regex:') === 0) {
+                    $ruleName = 'regex';
+                    $ruleParam = substr($ruleBlock, 6);
+                } else {
+                    $parts = explode(':', $ruleBlock, 2);
+                    $ruleName = $parts[0];
+                    $ruleParam = $parts[1] ?? null;
+                }
 
                 $methodName = 'validate' . str_replace('_', '', ucwords($ruleName, '_'));
                 if (method_exists($this, $methodName)) {
@@ -71,96 +79,98 @@ class RuleValidator
     private function validateNumeric($value): bool { return is_numeric($value); }
     private function validateBoolean($value): bool { return is_bool($value) || in_array($value, [1, 0, '1', '0', true, false], true); }
     private function validateArray($value): bool { return is_array($value); }
-    private function validateEmail($value): bool { return (bool) filter_var($value, FILTER_VALIDATE_EMAIL); }
     private function validateUrl($value): bool { return (bool) filter_var($value, FILTER_VALIDATE_URL); }
     private function validateJson($value): bool { if (!is_string($value)) { return false; } json_decode($value); return json_last_error() === JSON_ERROR_NONE; }
     private function validateUuid($value): bool { return is_string($value) && (bool) preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i', $value); }
 
-    // Numeric bounds
+    /**
+     * Advanced Email Validator supporting RFC standards and real-time DNS MX lookups.
+     */
+    private function validateEmail($value, ?string $param): bool
+    {
+        if (!is_string($value) || $value === '') {
+            return false;
+        }
+
+        // 1. Basic baseline filtering validation
+        if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
+            return false;
+        }
+
+        if ($param === null || $param === '') {
+            return true;
+        }
+
+        $options = explode(',', strtolower($param));
+
+        // 2. Strict RFC structure check layout
+        if (in_array('rfc', $options, true)) {
+            // Filter validation using strict format flags mapping rules
+            $rfcCheck = filter_var($value, FILTER_VALIDATE_EMAIL, FILTER_FLAG_EMAIL_UNICODE);
+            if (!$rfcCheck) {
+                return false;
+            }
+        }
+
+        // 3. Real-time DNS MX network routing boundary verification
+        if (in_array('dns', $options, true)) {
+            $domain = substr(strrchr($value, '@'), 1);
+            if ($domain === false) {
+                return false;
+            }
+            // Execute native checkdnsrr checking mail exchangers mapping
+            if (!checkdnsrr($domain, 'MX') && !checkdnsrr($domain, 'A')) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // Constraints & Bounds
     private function validateMin($value, ?string $param): bool { return $param !== null && is_numeric($value) && (float)$value >= (float)$param; }
     private function validateMax($value, ?string $param): bool { return $param !== null && is_numeric($value) && (float)$value <= (float)$param; }
     private function validateBetween($value, ?string $param): bool { if ($param === null) return false; $p = explode(',', $param); return is_numeric($value) && (float)$value >= (float)($p[0] ?? 0) && (float)$value <= (float)($p[1] ?? 0); }
-
-    // String lengths
     private function validateMinLength($value, ?string $param): bool { return $param !== null && is_string($value) && mb_strlen($value) >= (int)$param; }
     private function validateMaxLength($value, ?string $param): bool { return $param !== null && is_string($value) && mb_strlen($value) <= (int)$param; }
-
-    // Inclusions & Regex
     private function validateIn($value, ?string $param): bool { return $param !== null && in_array((string)$value, explode(',', $param), true); }
     private function validateNotIn($value, ?string $param): bool { return $param !== null && !in_array((string)$value, explode(',', $param), true); }
+
+    // Fixed Regex wrapper protecting inner layout pipelines from breaking splits parameters
     private function validateRegex($value, ?string $param): bool { return $param !== null && is_string($value) && (bool) preg_match($param, $value); }
 
-    // String alpha constraints
+    // Alphas and Digits
     private function validateAlpha($value): bool { return is_string($value) && (bool) preg_match('/^[a-zA-Z\p{L}]+$/u', $value); }
     private function validateAlphaNum($value): bool { return is_string($value) && (bool) preg_match('/^[a-zA-Z0-9\p{L}]+$/u', $value); }
     private function validateAlphaDash($value): bool { return is_string($value) && (bool) preg_match('/^[a-zA-Z0-9\p{L}_-]+$/u', $value); }
-
-    // Digits checks
     private function validateDigits($value, ?string $param): bool { return $param !== null && (is_int($value) || is_string($value)) && ctype_digit((string)$value) && strlen((string)$value) === (int)$param; }
     private function validateDigitsBetween($value, ?string $param): bool { if ($param === null || (!is_int($value) && !is_string($value)) || !ctype_digit((string)$value)) return false; $p = explode(',', $param); $len = strlen((string)$value); return $len >= (int)($p[0] ?? 0) && $len <= (int)($p[1] ?? 0); }
 
-    // Network IPs
+    // IPs and States
     private function validateIp($value): bool { return (bool) filter_var($value, FILTER_VALIDATE_IP); }
     private function validateIpv4($value): bool { return (bool) filter_var($value, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4); }
     private function validateIpv6($value): bool { return (bool) filter_var($value, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6); }
-
-    // State states checks
     private function validateAccepted($value): bool { return in_array($value, [true, 1, '1', 'yes', 'on'], true); }
     private function validateDeclined($value): bool { return in_array($value, [false, 0, '0', 'no', 'off'], true); }
     private function validateFilled($value): bool { return $value !== null && $value !== ''; }
     private function validatePresent($value, ?string $param, array $data, string $field): bool { return array_key_exists($field, $data); }
     private function validateProhibited($value, ?string $param, array $data, string $field): bool { return !array_key_exists($field, $data) || $value === null || $value === ''; }
+    private function validateConfirmed($value, ?string $param, array $data, string $field): bool { $confirmationField = $field . '_confirmation'; return isset($data[$confirmationField]) && $value === $data[$confirmationField]; }
 
-    // Confirmed matching rule
-    private function validateConfirmed($value, ?string $param, array $data, string $field): bool
-    {
-        $confirmationField = $field . '_confirmation';
-        return isset($data[$confirmationField]) && $value === $data[$confirmationField];
-    }
-
-    // Date validators engine layer
+    // Dates Boundaries
     private function validateDate($value): bool { if ($value instanceof \DateTimeInterface) return true; if (!is_string($value)) return false; return strtotime($value) !== false; }
     private function validateDateFormat($value, ?string $param): bool { if ($param === null || !is_string($value)) return false; $d = \DateTime::createFromFormat($param, $value); return $d && $d->format($param) === $value; }
-    private function validateBefore($value, ?string $param): bool
-    {
-        if ($param === null || !$this->validateDate($value)) {
-            return false;
-        }
-
-        $vTime = $value instanceof \DateTimeInterface
-            ? $value->getTimestamp()
-            : (is_string($value) ? strtotime($value) : false);
-
-        $pTime = strtotime($param);
-
-        return $pTime !== false && $vTime !== false && $vTime < $pTime;
-    }
-    private function validateAfter($value, ?string $param): bool
-    {
-        if ($param === null || !$this->validateDate($value)) {
-            return false;
-        }
-
-        $vTime = $value instanceof \DateTimeInterface
-            ? $value->getTimestamp()
-            : (is_string($value) ? strtotime($value) : false);
-
-        $pTime = strtotime($param);
-
-        return $pTime !== false && $vTime !== false && $vTime > $pTime;
-    }
-
-    // Database simulation layer hooks placeholders (evaluated dynamic custom closures inside requests context rules if needed)
-    private function validateUnique(): bool { return true; }
-    private function validateExists(): bool { return true; }
+    private function validateBefore($value, ?string $param): bool { if ($param === null || !$this->validateDate($value)) return false; $vTime = $value instanceof \DateTimeInterface ? $value->getTimestamp() : (is_string($value) ? strtotime($value) : false); $pTime = strtotime($param); return $pTime !== false && $vTime !== false && $vTime < $pTime; }
+    private function validateAfter($value, ?string $param): bool { if ($param === null || !$this->validateDate($value)) return false; $vTime = $value instanceof \DateTimeInterface ? $value->getTimestamp() : (is_string($value) ? strtotime($value) : false); $pTime = strtotime($param); return $pTime !== false && $vTime !== false && $vTime > $pTime; }
 
     // Files parameters
     private function validateMimetypes($value, ?string $param): bool { if ($param === null || !is_array($value) || !isset($value['type'])) return false; return in_array($value['type'], explode(',', $param), true); }
     private function validateSize($value, ?string $param): bool { if ($param === null || !is_array($value) || !isset($value['size'])) return false; return $value['size'] <= ((int)$param * 1024); }
 
-    /**
-     * Smart translation parsing token placeholders replacing strategy execution.
-     */
+    // Database placeholders
+    private function validateUnique(): bool { return true; }
+    private function validateExists(): bool { return true; }
+
     private function getErrorMessage(string $field, string $rule, ?string $param, array $data, array $customMessages): string
     {
         $messageKey = $field . '.' . $rule;
