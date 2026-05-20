@@ -1,6 +1,6 @@
 {
   "name": "unquam/nette-maker",
-  "description": "CLI code generator for Nette Framework: create presenters, models, migrations, and more.",
+  "description": "CLI code generator for Nette Framework: scaffold modules, migrations, seeders, factories, authentication, API resources, form requests and more.",
   "keywords": [
     "nette",
     "cli",
