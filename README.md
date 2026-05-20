@@ -305,7 +305,7 @@ public function actionCreate(): void
 {
     try {
         $request = new \App\Presentation\Api\Requests\Article\StoreRequest($this->getHttpRequest()); 
-        $validatedData = $request->validate(); // Safe, explicit verification loop\)this->model->create(\(validatedData);\)this->sendJson(['status' => 'success']);
+        $validatedData = $request->validate(); // Safe, explicit verification loop $this->model->create($validatedData); $this->sendJson(['status' => 'success']);
         
     } catch (\Unquam\NetteMaker\Exceptions\ValidationException $e) { 
         $this->getHttpResponse()->setCode($e->getCode());
