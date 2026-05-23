@@ -392,7 +392,9 @@ public function actionCreate(): void
 
 Generate test classes for **Nette Tester** (default) or **PHPUnit**. The command automatically analyzes the target class using reflection and scaffolds test methods for all its public actions.
 
-> 💡 **Note:** To run default tests, make sure you have `nette/tester` in your dev dependencies.
+> 💡 **Prerequisites:**
+> * For Nette Tester (default), ensure you have installed: `composer require --dev nette/tester`
+> * For PHPUnit (`--phpunit`), ensure it is installed in your target project: `composer require --dev phpunit/phpunit`
 
 ```bash
 # Generate Nette Tester class (creates tests/Unit/Services/UserServiceTest.phpt)
