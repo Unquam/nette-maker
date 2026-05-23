@@ -16,15 +16,12 @@ class {{CLASS_NAME}} extends \Tester\TestCase
     /** @var {{TESTED_CLASS_NAME}} */
     private ${{TESTED_CLASS_VAR}};
 
-    public function __construct(\Nette\DI\Container $container)
-    {
-        $this->{{TESTED_CLASS_VAR}} = $container->getByType({{TESTED_CLASS_NAME}}::class);
-    }
-
     public function setUp(): void
     {
         parent::setUp();
+
+        $this->{{TESTED_CLASS_VAR}} = new {{TESTED_CLASS_NAME}}();
     }
 {{METHODS}}}
 
-(new {{CLASS_NAME}}($container))->run();
+(new {{CLASS_NAME}}())->run();
