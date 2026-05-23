@@ -1,0 +1,20 @@
+<?php
+declare(strict_types=1);
+
+namespace {{NAMESPACE}};
+
+use PHPUnit\Framework\TestCase;
+use {{TESTED_CLASS_FQN}};
+
+class {{CLASS_NAME}} extends TestCase
+{
+    /** @var {{TESTED_CLASS_NAME}} */
+    private ${{TESTED_CLASS_VAR}};
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->{{TESTED_CLASS_VAR}} = new {{TESTED_CLASS_NAME}}();
+    }
+{{METHODS}}}

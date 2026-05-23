@@ -1,0 +1,30 @@
+<?php
+declare(strict_types=1);
+
+namespace {{NAMESPACE}};
+
+use Tester\Assert;
+use {{TESTED_CLASS_FQN}};
+
+require __DIR__ . '/{{RELATIVE_BOOTSTRAP}}';
+
+/**
+ * @testCase
+ */
+class {{CLASS_NAME}} extends \Tester\TestCase
+{
+    /** @var {{TESTED_CLASS_NAME}} */
+    private ${{TESTED_CLASS_VAR}};
+
+    public function __construct(\Nette\DI\Container $container)
+    {
+        $this->{{TESTED_CLASS_VAR}} = $container->getByType({{TESTED_CLASS_NAME}}::class);
+    }
+
+    public function setUp(): void
+    {
+        parent::setUp();
+    }
+{{METHODS}}}
+
+(new {{CLASS_NAME}}($container))->run();

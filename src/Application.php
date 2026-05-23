@@ -17,6 +17,7 @@ use Unquam\NetteMaker\Commands\MakePresenterCommand;
 use Unquam\NetteMaker\Commands\MakeRepositoryCommand;
 use Unquam\NetteMaker\Commands\MakeSeederCommand;
 use Unquam\NetteMaker\Commands\MakeServiceCommand;
+use Unquam\NetteMaker\Commands\MakeTestCommand;
 use Unquam\NetteMaker\Commands\SeedCommand;
 use Unquam\NetteMaker\Commands\WipeCommand;
 use Unquam\NetteMaker\Migration\MigrateCommand;
@@ -24,7 +25,7 @@ use Unquam\NetteMaker\Migration\MigrateCommand;
 class Application extends ConsoleApplication
 {
     /** @var string */
-    private const VERSION = '2.2.4';
+    private const VERSION = '2.3.0';
 
     /** @var string */
     private const NAME = 'Nette Maker';
@@ -70,6 +71,7 @@ class Application extends ConsoleApplication
             new MakeLatteCommand(),
             new MakeRepositoryCommand(),
             new MakeServiceCommand(),
+            new MakeTestCommand($configFile),
 
             // Inside registerCommands() method array stack:
             new Commands\MakeAuthCommand($configFile),

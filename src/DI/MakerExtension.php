@@ -23,6 +23,7 @@ use Unquam\NetteMaker\Commands\MakeServiceCommand;
 use Unquam\NetteMaker\Commands\SeedCommand;
 use Unquam\NetteMaker\Commands\WipeCommand;
 use Unquam\NetteMaker\Migration\MigrateCommand;
+use Unquam\NetteMaker\Commands\MakeTestCommand;
 
 class MakerExtension extends CompilerExtension
 {
@@ -108,6 +109,10 @@ class MakerExtension extends CompilerExtension
 
         $builder->addDefinition($this->prefix('makeRequest'))
             ->setFactory(MakeRequestCommand::class, [$configFile])
+            ->setTags($tags);
+
+        $builder->addDefinition($this->prefix('makeTest'))
+            ->setFactory(MakeTestCommand::class, [$configFile])
             ->setTags($tags);
     }
 }
