@@ -19,7 +19,7 @@ class MakeTestCommand extends Command
 
     public function __construct(string $configFile)
     {
-        parent::__construct();
+        parent::__construct('make:test');
         $this->basePath = dirname($configFile);
     }
 
