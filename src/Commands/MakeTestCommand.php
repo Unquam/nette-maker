@@ -12,11 +12,15 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class MakeTestCommand extends Command
 {
+    /** @var string */
     protected static $defaultName = 'make:test';
 
     /** @var string */
     private $basePath;
 
+    /**
+     * Constructor accepts config file path to resolve project $basePath
+     */
     public function __construct(string $configFile)
     {
         parent::__construct('make:test');
@@ -31,6 +35,9 @@ class MakeTestCommand extends Command
             ->addOption('phpunit', null, InputOption::VALUE_NONE, 'Generate a PHPUnit test instead of Nette Tester');
     }
 
+    /**
+     * Interactive prompt if the class name argument is missing
+     */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
         if ($input->getArgument('name') !== null) {
@@ -54,22 +61,20 @@ class MakeTestCommand extends Command
         $name = (string) $input->getArgument('name');
         $isPhpUnit = (bool) $input->getOption('phpunit');
 
+        // Verify testing package availability in the target project
         if (!$isPhpUnit && !class_exists('Tester\Environment')) {
-            $io->warning([
-                'Nette Tester is not installed in this project!',
-                'The test will be generated, but you won\'t be able to run it.',
-                'Run: composer require --dev nette/tester'
-            ]);
+            $io->writeln('<fg=yellow>⚠ Nette Tester is not installed in this project!</fg=yellow>');
+            $io->writeln('<comment>The test will be generated, but you won\'t be able to run it.</comment>');
+            $io->writeln('<comment>Run: composer require --dev nette/tester</comment>' . PHP_EOL);
         }
 
         if ($isPhpUnit && !class_exists('PHPUnit\Framework\TestCase')) {
-            $io->warning([
-                'PHPUnit is not installed in this project!',
-                'The test will be generated, but you won\'t be able to run it.',
-                'Run: composer require --dev phpunit/phpunit'
-            ]);
+            $io->writeln('<fg=yellow>⚠ PHPUnit is not installed in this project!</fg=yellow>');
+            $io->writeln('<comment>The test will be generated, but you won\'t be able to run it.</comment>');
+            $io->writeln('<comment>Run: composer require --dev phpunit/phpunit</comment>' . PHP_EOL);
         }
 
+        // Normalize slashes and calculate base names
         $name = str_replace('\\', '/', $name);
         $className = basename($name);
         $testClassName = $className . 'Test';
@@ -77,6 +82,7 @@ class MakeTestCommand extends Command
 
         $testedClassFqn = 'App\\' . str_replace('/', '\\', $name);
 
+        // Automatic bootstrap.php creation (Nette Tester only)
         if (!$isPhpUnit) {
             $bootstrapPath = $this->basePath . '/tests/bootstrap.php';
             if (!file_exists($bootstrapPath)) {
@@ -91,10 +97,11 @@ class MakeTestCommand extends Command
                     . "Tester\\Environment::setup();\n";
 
                 file_put_contents($bootstrapPath, $bootstrapContent);
-                $io->comment('Created missing tests/bootstrap.php for Nette Tester.');
+                $io->writeln('<comment>Created missing tests/bootstrap.php for Nette Tester.</comment>');
             }
         }
 
+        // Dynamic Namespace resolution from composer.json
         $testNamespace = 'Tests\\Unit';
         $composerPath = $this->basePath . '/composer.json';
 
@@ -111,22 +118,26 @@ class MakeTestCommand extends Command
             }
         }
 
+        // Append subdirectories based on target class path
         $subPath = dirname($name);
         if ($subPath !== '.') {
             $testNamespace .= '\\' . str_replace('/', '\\', $subPath);
         }
 
+        // Define target file paths and extensions
         $extension = $isPhpUnit ? '.php' : '.phpt';
         $targetPath = $this->basePath . '/tests/Unit/' . $name . 'Test' . $extension;
 
         if (file_exists($targetPath)) {
-            $io->error(sprintf('Test already exists at %s', $targetPath));
-            return Command::FAILURE;
+            $io->writeln(sprintf('<fg=yellow>⚠ Test file already exists:</fg=yellow> %s', str_replace($this->basePath . '/', '', $targetPath)));
+            return Command::SUCCESS;
         }
 
+        // Calculate relative path to bootstrap.php
         $depth = count(explode('/', $name)) + 1;
         $relativeBootstrap = str_repeat('../', $depth) . 'bootstrap.php';
 
+        // Scan public class methods via Reflection
         $generatedMethods = '';
 
         if (class_exists($testedClassFqn)) {
@@ -135,12 +146,14 @@ class MakeTestCommand extends Command
                 $methods = $reflection->getMethods(\ReflectionMethod::IS_PUBLIC);
 
                 foreach ($methods as $method) {
+                    // Method must be declared in the target class, not inherited
                     if ($method->getDeclaringClass()->getName() !== $testedClassFqn) {
                         continue;
                     }
 
                     $methodName = $method->getName();
 
+                    // Skip constructors and magic methods
                     if ($methodName === '__construct' || strncmp($methodName, '__', 2) === 0) {
                         continue;
                     }
@@ -154,9 +167,11 @@ class MakeTestCommand extends Command
                     }
                 }
             } catch (\ReflectionException $e) {
+                // Safe fallback on reflection errors
             }
         }
 
+        // Fallback placeholder if class has no public methods or does not exist yet
         if ($generatedMethods === '') {
             if ($isPhpUnit) {
                 $generatedMethods = "\n    public function testSuccess(): void\n    {\n        \$this->assertTrue(true);\n    }\n";
@@ -165,6 +180,7 @@ class MakeTestCommand extends Command
             }
         }
 
+        // Load stub file from package directory
         $stubFile = $isPhpUnit ? 'test.phpunit.stub' : 'test.tester.stub';
         $stubPath = dirname(__DIR__, 2) . '/stubs/' . $stubFile;
 
@@ -175,6 +191,7 @@ class MakeTestCommand extends Command
 
         $stub = (string) file_get_contents($stubPath);
 
+        // Placeholders replacement array
         $search = [
             '{{NAMESPACE}}',
             '{{CLASS_NAME}}',
@@ -197,6 +214,7 @@ class MakeTestCommand extends Command
 
         $content = str_replace($search, $replace, $stub);
 
+        // Ensure directory tree exists and save the test file
         $dir = dirname($targetPath);
         if (!is_dir($dir)) {
             mkdir($dir, 0777, true);
@@ -204,7 +222,12 @@ class MakeTestCommand extends Command
 
         file_put_contents($targetPath, $content);
 
-        $io->writeln('<fg=green>✓ ' . ($isPhpUnit ? 'PHPUnit' : 'Nette Tester') . ' test created:</fg=green> tests/Unit/' . $name . 'Test' . ($isPhpUnit ? '.php' : '.phpt'));
+        // Consolidated signature style output for Unquam\NetteMaker package
+        $io->writeln(sprintf(
+            '<fg=green>✓ %s test created:</fg=green> %s',
+            $isPhpUnit ? 'PHPUnit' : 'Nette Tester',
+            str_replace($this->basePath . '/', '', $targetPath)
+        ));
 
         return Command::SUCCESS;
     }
