@@ -95,6 +95,8 @@ php nette <command> [arguments] [options]
 | `make:latte <Name>` | Generate a Latte template |
 | `make:request <Module/Name>` | Generate an API Form Request validation class |
 | `make:request <Module/Name> --web` | Generate a Web Frontend Form Request class |
+| `make:test <Module/Name>` | Generate a Nette Tester test class |
+| `make:test <Module/Name> --phpunit` | Generate a PHPUnit test class |
 | `make:module <Name>` | Generate a full module (all of the above) |
 | `make:auth` | Scaffold full authentication system |
 | `make:resource <Name>` | Generate a JSON API resource transformer |
