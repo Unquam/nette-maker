@@ -204,11 +204,7 @@ class MakeTestCommand extends Command
 
         file_put_contents($targetPath, $content);
 
-        $io->success(sprintf(
-            'Created %s test at %s',
-            $isPhpUnit ? 'PHPUnit' : 'Nette Tester',
-            $targetPath
-        ));
+        $io->writeln('<fg=green>✓ ' . ($isPhpUnit ? 'PHPUnit' : 'Nette Tester') . ' test created:</fg=green> tests/Unit/' . $name . 'Test' . ($isPhpUnit ? '.php' : '.phpt'));
 
         return Command::SUCCESS;
     }
