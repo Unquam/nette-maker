@@ -54,6 +54,22 @@ class MakeTestCommand extends Command
         $name = (string) $input->getArgument('name');
         $isPhpUnit = (bool) $input->getOption('phpunit');
 
+        if (!$isPhpUnit && !class_exists('Tester\Environment')) {
+            $io->warning([
+                'Nette Tester is not installed in this project!',
+                'The test will be generated, but you won\'t be able to run it.',
+                'Run: composer require --dev nette/tester'
+            ]);
+        }
+
+        if ($isPhpUnit && !class_exists('PHPUnit\Framework\TestCase')) {
+            $io->warning([
+                'PHPUnit is not installed in this project!',
+                'The test will be generated, but you won\'t be able to run it.',
+                'Run: composer require --dev phpunit/phpunit'
+            ]);
+        }
+
         $name = str_replace('\\', '/', $name);
         $className = basename($name);
         $testClassName = $className . 'Test';

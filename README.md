@@ -385,6 +385,34 @@ public function actionCreate(): void
 
 ---
 
+### Test Generation
+### `make:test`
+
+Generate test classes for **Nette Tester** (default) or **PHPUnit**. The command automatically analyzes the target class using reflection and scaffolds test methods for all its public actions.
+
+> 💡 **Note:** To run default tests, make sure you have `nette/tester` in your dev dependencies.
+
+```bash
+# Generate Nette Tester class (creates tests/Unit/Services/UserServiceTest.phpt)
+php nette make:test Services/UserService
+
+# Generate PHPUnit class (creates tests/Unit/Services/UserServiceTest.php)
+php nette make:test Services/UserService --phpunit
+```
+
+#### Interactive Mode
+If you run the command without arguments, it will ask for the class name interactively:
+```bash
+php nette make:test
+```
+
+#### Smart Features:
+* **Method Auto-Scaffolding**: Reads public methods from your class and generates matching `testMethodName()` boilerplate blocks.
+* **Smart Namespaces**: Dynamically detects your dev-dependencies autoloading settings from `composer.json`.
+* **Zero Config Setup**: Automatically creates a fully functional `tests/bootstrap.php` for Nette Tester if it's missing in your project.
+
+---
+
 ### `make:module`
 
 Scaffolds a complete module in one command: Presenter, Model, Repository, Service, Migration, and Latte template.
