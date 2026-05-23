@@ -134,7 +134,7 @@ class MakeTestCommand extends Command
         }
 
         // Calculate relative path to bootstrap.php
-        $depth = count(explode('/', $name)) + 1;
+        $depth = count(explode('/', $name));
         $relativeBootstrap = str_repeat('../', $depth) . 'bootstrap.php';
 
         // Scan public class methods via Reflection
