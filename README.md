@@ -392,9 +392,7 @@ public function actionCreate(): void
 
 Generate test classes for **Nette Tester** (default) or **PHPUnit**. The command automatically analyzes the target class using reflection and scaffolds test methods for all its public actions.
 
-> 💡 **Prerequisites:**
-> * For Nette Tester (default), ensure you have installed: `composer require --dev nette/tester`
-> * For PHPUnit (`--phpunit`), ensure it is installed in your target project: `composer require --dev phpunit/phpunit`
+> 💡 **Note:** To run default tests, make sure you have `nette/tester` in your dev dependencies.
 
 ```bash
 # Generate Nette Tester class (creates tests/Unit/Services/UserServiceTest.phpt)
@@ -409,6 +407,18 @@ If you run the command without arguments, it will ask for the class name interac
 ```bash
 php nette make:test
 ```
+
+#### Real-world Nested Example
+If your project has a deep folder structure (e.g., `app/Model/Security/Authenticator.php`), just pass the path relative to your `app` directory:
+
+```bash
+php nette make:test Model/Security/Authenticator
+```
+
+The tool will dynamically build the correct nested test structure:
+* **Target Location:** `tests/Unit/Model/Security/AuthenticatorTest.phpt`
+* **Smart Imports:** Automatically generates `use App\Model\Security\Authenticator;`
+* **Bootstrap Resolution:** Dynamically calculates directory depth (`require __DIR__ . '/../../../bootstrap.php';`)
 
 #### Smart Features:
 * **Method Auto-Scaffolding**: Reads public methods from your class and generates matching `testMethodName()` boilerplate blocks.
